@@ -1,0 +1,6 @@
+*.in
+*.log
+*.cache
+*.cache/
+build/
+build-aux/
