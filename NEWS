@@ -1,0 +1,11 @@
+Version 1.0.0
+-----------
+
+ Application level hierarchical approach to minimize communication cost of dense 
+linear algebra applications on large-scale distributed memory platforms
+
+
+Version 1.0.0 
+-----------
+
+Initial release
