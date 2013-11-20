@@ -2,7 +2,6 @@
 #include <math.h>
 #include "Matrix_init.h"
 #include "tools/hpnla_debug.h"
-#include "hpnla_memory.h"
 #include <math.h>
 #define _unused(x) ((void)x)
 #ifdef HDNLA_SMPI

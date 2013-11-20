@@ -9,8 +9,7 @@
 #include "Matrix_init.h"
 #include "Summa.h"
 #include "hpnla_cblas.h"
-#include "hpnla_memory.h"
-#include "hpnla/hpnla_timer.h"
+#include "tools/hpnla_timer.h"
 
 #include <mpi.h>
 #include <math.h>

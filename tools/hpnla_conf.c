@@ -96,9 +96,9 @@ hpnla_process_conf* hpnla_get_conf_all(char* filename, int* size){
       continue;
     confs = realloc(confs, sizeof(hpnla_process_conf) * (n + 1));
     confs[n].hostname = malloc(sizeof(char) * MPI_MAX_PROCESSOR_NAME);
-    confs[n].bind = malloc(sizeof(char) * FUPERMOD_BIND_MAX_STRING);
-    confs[n].device_type = malloc(sizeof(char) * FUPERMOD_DEVICE_MAX_STRING);
-    confs[n].subopts = malloc(sizeof(char) * FUPERMOD_SUBOPTION_MAX_STRING);
+    confs[n].bind = malloc(sizeof(char) * HPNLA_BIND_MAX_STRING);
+    confs[n].device_type = malloc(sizeof(char) * HPNLA_DEVICE_MAX_STRING);
+    confs[n].subopts = malloc(sizeof(char) * HPNLA_SUBOPTION_MAX_STRING);
     int pos = 0;
     int err = sscanf(line, "%s %d %s %s %s %n", confs[n].hostname, &confs[n].rank_intra, confs[n].bind, confs[n].device_type, confs[n].subopts, &pos);
     if (err < 4) {

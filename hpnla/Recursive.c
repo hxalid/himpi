@@ -5,12 +5,11 @@
  *
  */
 
-#include "fupermod/hpnla_debug.h"
-#include "hpnla_bcast.h"
+#include "tools/hpnla_debug.h"
+#include "communication/hpnla_bcast.h"
 #include "Matrix_init.h"
 #include "Summa.h"
-#include "hpnla_memory.h"
-#include "fupermod/hpnla_timer.h"
+#include "tools/hpnla_timer.h"
 #include <stdlib.h>
 #ifdef HDNLA_SMPI
 #include <smpi.h>

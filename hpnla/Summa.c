@@ -5,11 +5,10 @@
  */
 #include "config.h"
 #include "Matrix_init.h"
-#include "utils/hpnla_debug.h"
-#include "utils/hpnla_timer.h"
-#include "hpnla_bcast.h"
-#include "hpnla_memory.h"
-#include "hpnla_cblas.h"
+#include "tools/hpnla_debug.h"
+#include "tools/hpnla_timer.h"
+#include "communication/hpnla_bcast.h"
+#include "cblas_wrappers/hpnla_cblas.h"
 #include "Summa.h"
 #include <sys/time.h>
 #ifdef HDNLA_SMPI

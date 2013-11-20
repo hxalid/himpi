@@ -7,7 +7,6 @@
 
 #include "config.h"
 #include "hpnla_cblas.h"
-#include "hpnla_memory.h"
 #include "Matrix_init.h"
 
 #include <getopt.h>

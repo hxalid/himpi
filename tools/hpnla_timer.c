@@ -1,5 +1,5 @@
 # include "config.h"
-# include "hdnla_timer.h"
+# include "hpnla_timer.h"
 #ifdef HDNLA_SMPI
 #include <mpi.h>
 #endif

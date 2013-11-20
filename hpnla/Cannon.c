@@ -1,12 +1,12 @@
 #include "Matrix_init.h"
-#include "tools/hdnla_debug.h"
-#include "tools/hdnla_timer.h"
+#include "tools/hpnla_debug.h"
+#include "tools/hpnla_timer.h"
 #include "Cannon.h"
 #include <sys/time.h>
 #include <stdbool.h>
 
 
-double cannon(hdnla_gemm  * gemm,
+double cannon(hpnla_gemm  * gemm,
 		double *a, double *b, double *c,
 		size_t local_matrix_dim,int proc_assign, int *cart_coords, MPI_Comm comm_cart)
 {
@@ -47,7 +47,7 @@ double cannon(hdnla_gemm  * gemm,
 	size_t iter;
 	for( iter = 0; iter < (size_t)proc_assign; iter++ ){ // start =0 end =No_of_process in row-1
 
-		hdnla_gemm_execute(gemm, //user parameters: here it's equal to NULL
+		hpnla_gemm_execute(gemm, //user parameters: here it's equal to NULL
 				CblasRowMajor, CblasNoTrans, CblasNoTrans,local_matrix_dim, 
 				local_matrix_dim,local_matrix_dim,alpha, a, lda, b, ldb, beta, c, ldc);
 

@@ -4,8 +4,8 @@
  * \include cblas_test.c
  */
 #include "config.h"
-#include "fupermod_cblas.h"
-#include "fupermod/fupermod_conf.h"
+#include "hpnla_cblas.h"
+#include "tools/hpnla_conf.h"
 
 #include <getopt.h>
 #include <unistd.h>
@@ -53,17 +53,17 @@ int main(int argc, char** argv) {
       MPI_Finalize();
       return 0;
     }
-    fupermod_print_conf(MPI_COMM_WORLD, 0, file, "cpu", "");
+    hpnla_print_conf(MPI_COMM_WORLD, 0, file, "cpu", "");
     fclose(file);
     fflush(file);
   }
   // configuration
-  fupermod_process_conf conf = fupermod_get_conf(MPI_COMM_WORLD, conf_file);  
-  fupermod_gemm* gemm = fupermod_gemm_alloc(&conf);
+  hpnla_process_conf conf = hpnla_get_conf(MPI_COMM_WORLD, conf_file);  
+  hpnla_gemm* gemm = hpnla_gemm_alloc(&conf);
 
-  fupermod_float* A = (fupermod_float*)malloc(sizeof(fupermod_float) * m * k);
-  fupermod_float* B = (fupermod_float*)malloc(sizeof(fupermod_float) * k * n);
-  fupermod_float* C = (fupermod_float*)malloc(sizeof(fupermod_float) * m * n);
+  hpnla_float* A = (hpnla_float*)malloc(sizeof(hpnla_float) * m * k);
+  hpnla_float* B = (hpnla_float*)malloc(sizeof(hpnla_float) * k * n);
+  hpnla_float* C = (hpnla_float*)malloc(sizeof(hpnla_float) * m * n);
   int i;
   for (i = 0; i < m * k; i++)
     A[i] = 1.1;
@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
 
   struct timeval start, end;
   gettimeofday(&start, NULL);
-  fupermod_gemm_execute(gemm, CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, k, 1,
+  hpnla_gemm_execute(gemm, CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, k, 1,
                 A, k, B, n, 0, C, n);
   gettimeofday(&end, NULL);
   double time = ((end.tv_sec + end.tv_usec / 1000000.) -
@@ -86,6 +86,6 @@ int main(int argc, char** argv) {
   free(B);
   free(C);
 
-  fupermod_gemm_free(gemm);
+  hpnla_gemm_free(gemm);
   return 0;
 }

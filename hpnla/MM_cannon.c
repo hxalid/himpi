@@ -1,9 +1,8 @@
 #include "config.h"
-#include "tools/hdnla_debug.h"
+#include "tools/hpnla_debug.h"
 #include "Matrix_init.h"
-#include "hdnla_cblas.h"
-#include "hdnla_memory.h"
-#include "tools/hdnla_timer.h"
+#include "hpnla_cblas.h"
+#include "tools/hpnla_timer.h"
 # include "Cannon.h"
 
 #include <mpi.h>
@@ -88,7 +87,7 @@ int main(int argc, char ** argv)
 
   // Defined the device if we use the GPU
   //TODO explain parameters
-  hdnla_gemm  * gemm  = hdnla_gemm_alloc(NULL);
+  hpnla_gemm  * gemm  = hpnla_gemm_alloc(NULL);
 
 /********************************************************************************************************************/
 
@@ -112,7 +111,7 @@ int main(int argc, char ** argv)
   SMPI_SHARED_FREE(c);
 
   MPI_Comm_free(&comm_cart); /* Free the communicator */
-  hdnla_gemm_free(gemm);
+  hpnla_gemm_free(gemm);
 
   MPI_Finalize(); 
 

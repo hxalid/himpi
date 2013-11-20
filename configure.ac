@@ -1,5 +1,5 @@
 AC_PREREQ(2.59)
-AC_INIT([hdnla], [1.0.0], [http://hcl.ucd.ie/project/hdnla])
+AC_INIT([hpnla], [1.0.0], [http://hcl.ucd.ie/project/hpnla])
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_AUX_DIR([build-aux])
@@ -18,6 +18,7 @@ fi
 
 AC_PROG_LIBTOOL
 AC_PROG_INSTALL
+
 
 AC_MSG_CHECKING([whether debug is enabled])
 AC_ARG_ENABLE([debug], [AC_HELP_STRING([--enable-debug], [Enable debug (default: disabled)])], [debug="yes"], [debug="no"])
@@ -126,14 +127,21 @@ esac
 
 AC_CONFIG_FILES([
 	Makefile
-        hdla/Makefile
+        hpnla/Makefile
 	tools/Makefile
 	tests/Makefile
+	cblas_wrappers/Makefile
+	communication/Makefile
 ])
 
+
+
 DX_PS_FEATURE([OFF])
-DX_INIT_DOXYGEN(hdnla)
+DX_INIT_DOXYGEN(hpnla)
 define([svn_revision], esyscmd([sh -c "svnversion -n"]))dnl
 DX_ENV_APPEND(SVN_REVISION, [svn_revision])
+
+
+
 
 AC_OUTPUT

@@ -37,7 +37,7 @@ host_triplet = @host@
 bin_PROGRAMS = cblas_test$(EXEEXT) gemm_block$(EXEEXT) \
 	gemm_block_mpi$(EXEEXT) MM_mpi$(EXEEXT) MM_recursive$(EXEEXT) \
 	Cannon$(EXEEXT)
-subdir = examples
+subdir = hpnla
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
@@ -55,36 +55,38 @@ am_Cannon_OBJECTS = MM_cannon.$(OBJEXT) Cannon.$(OBJEXT) \
 Cannon_OBJECTS = $(am_Cannon_OBJECTS)
 Cannon_DEPENDENCIES =  \
 	$(top_builddir)/cblas_wrappers/libcblas_wrappers.la \
-	$(top_builddir)/fupermod/libfupermod.la
-am_MM_mpi_OBJECTS = fupermod_bcast.$(OBJEXT) MM_mpi.$(OBJEXT) \
-	Summa.$(OBJEXT) Matrix_init.$(OBJEXT) 2.5D_MM.$(OBJEXT)
+	$(top_builddir)/tools/libhpnla_tools.la
+am_MM_mpi_OBJECTS = MM_mpi.$(OBJEXT) Summa.$(OBJEXT) \
+	Matrix_init.$(OBJEXT) 2.5D_MM.$(OBJEXT)
 MM_mpi_OBJECTS = $(am_MM_mpi_OBJECTS)
 MM_mpi_DEPENDENCIES =  \
 	$(top_builddir)/cblas_wrappers/libcblas_wrappers.la \
-	$(top_builddir)/fupermod/libfupermod.la
-am_MM_recursive_OBJECTS = fupermod_bcast.$(OBJEXT) \
-	MM_recursive.$(OBJEXT) Summa.$(OBJEXT) Matrix_init.$(OBJEXT) \
-	Recursive.$(OBJEXT)
+	$(top_builddir)/tools/libhpnla_tools.la \
+	$(top_builddir)/communication/libhpnla_bcast.la
+am_MM_recursive_OBJECTS = MM_recursive.$(OBJEXT) Summa.$(OBJEXT) \
+	Matrix_init.$(OBJEXT) Recursive.$(OBJEXT)
 MM_recursive_OBJECTS = $(am_MM_recursive_OBJECTS)
 MM_recursive_DEPENDENCIES =  \
 	$(top_builddir)/cblas_wrappers/libcblas_wrappers.la \
-	$(top_builddir)/fupermod/libfupermod.la
+	$(top_builddir)/tools/libhpnla_tools.la \
+	$(top_builddir)/communication/libhpnla_bcast.la
 am_cblas_test_OBJECTS = cblas_test.$(OBJEXT)
 cblas_test_OBJECTS = $(am_cblas_test_OBJECTS)
 cblas_test_DEPENDENCIES =  \
 	$(top_builddir)/cblas_wrappers/libcblas_wrappers.la \
-	$(top_builddir)/fupermod/libfupermod.la
+	$(top_builddir)/tools/libhpnla_tools.la
 am_gemm_block_OBJECTS = gemm_block.$(OBJEXT) Matrix_init.$(OBJEXT)
 gemm_block_OBJECTS = $(am_gemm_block_OBJECTS)
 gemm_block_DEPENDENCIES =  \
 	$(top_builddir)/cblas_wrappers/libcblas_wrappers.la \
-	$(top_builddir)/fupermod/libfupermod.la
-am_gemm_block_mpi_OBJECTS = fupermod_bcast.$(OBJEXT) \
-	gemm_block_mpi.$(OBJEXT) Summa.$(OBJEXT) Matrix_init.$(OBJEXT)
+	$(top_builddir)/tools/libhpnla_tools.la
+am_gemm_block_mpi_OBJECTS = gemm_block_mpi.$(OBJEXT) Summa.$(OBJEXT) \
+	Matrix_init.$(OBJEXT)
 gemm_block_mpi_OBJECTS = $(am_gemm_block_mpi_OBJECTS)
 gemm_block_mpi_DEPENDENCIES =  \
 	$(top_builddir)/cblas_wrappers/libcblas_wrappers.la \
-	$(top_builddir)/fupermod/libfupermod.la
+	$(top_builddir)/tools/libhpnla_tools.la \
+	$(top_builddir)/communication/libhpnla_bcast.la
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__depfiles_maybe = depfiles
@@ -280,13 +282,13 @@ Cannon_SOURCES = \
 nodist_EXTRA_Cannon_SOURCES = dummy.cpp
 Cannon_LDADD = \
   $(top_builddir)/cblas_wrappers/libcblas_wrappers.la \
-  $(top_builddir)/fupermod/libfupermod.la
+  $(top_builddir)/tools/libhpnla_tools.la
 
 cblas_test_SOURCES = cblas_test.c
 nodist_EXTRA_cblas_test_SOURCES = dummy.cpp
 cblas_test_LDADD = \
   $(top_builddir)/cblas_wrappers/libcblas_wrappers.la \
-  $(top_builddir)/fupermod/libfupermod.la
+  $(top_builddir)/tools/libhpnla_tools.la
 
 
 #Block Matrix Multiplication example
@@ -298,13 +300,11 @@ gemm_block_SOURCES = \
 nodist_EXTRA_gemm_block_SOURCES = dummy.cpp
 gemm_block_LDADD = \
   $(top_builddir)/cblas_wrappers/libcblas_wrappers.la \
-  $(top_builddir)/fupermod/libfupermod.la
+  $(top_builddir)/tools/libhpnla_tools.la
 
 
 #Summa example
 gemm_block_mpi_SOURCES = \
-  fupermod_bcast.c \
-  fupermod_bcast.h \
   gemm_block_mpi.c \
   Summa.c \
   Summa.h \
@@ -314,13 +314,12 @@ gemm_block_mpi_SOURCES = \
 nodist_EXTRA_gemm_block_mpi_SOURCES = dummy.cpp
 gemm_block_mpi_LDADD = \
   $(top_builddir)/cblas_wrappers/libcblas_wrappers.la \
-  $(top_builddir)/fupermod/libfupermod.la
+  $(top_builddir)/tools/libhpnla_tools.la \
+  $(top_builddir)/communication/libhpnla_bcast.la
 
 
 #Summa 2.5D example
 MM_mpi_SOURCES = \
-  fupermod_bcast.c \
-  fupermod_bcast.h \
   MM_mpi.c \
   Summa.c \
   Summa.h \
@@ -332,13 +331,12 @@ MM_mpi_SOURCES = \
 nodist_EXTRA_MM_mpi_SOURCES = dummy.cpp
 MM_mpi_LDADD = \
   $(top_builddir)/cblas_wrappers/libcblas_wrappers.la \
-  $(top_builddir)/fupermod/libfupermod.la
+  $(top_builddir)/tools/libhpnla_tools.la \
+  $(top_builddir)/communication/libhpnla_bcast.la
 
 
 #Hierarchical Matrix Multiplication example
 MM_recursive_SOURCES = \
-  fupermod_bcast.c \
-  fupermod_bcast.h \
   MM_recursive.c \
   Summa.c \
   Summa.h \
@@ -350,7 +348,8 @@ MM_recursive_SOURCES = \
 nodist_EXTRA_MM_recursive_SOURCES = dummy.cpp
 MM_recursive_LDADD = \
   $(top_builddir)/cblas_wrappers/libcblas_wrappers.la \
-  $(top_builddir)/fupermod/libfupermod.la
+  $(top_builddir)/tools/libhpnla_tools.la \
+  $(top_builddir)/communication/libhpnla_bcast.la
 
 all: all-am
 
@@ -365,9 +364,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu examples/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu hpnla/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu examples/Makefile
+	  $(AUTOMAKE) --gnu hpnla/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -464,7 +463,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Summa.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cblas_test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dummy.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fupermod_bcast.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gemm_block.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gemm_block_mpi.Po@am__quote@
 

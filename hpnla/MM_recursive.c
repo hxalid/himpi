@@ -12,7 +12,6 @@
 #include "Matrix_init.h"
 #include "Recursive.h"
 #include "hpnla_cblas.h"
-#include "hpnla_memory.h"
 
 #include <mpi.h>
 #include <math.h>
