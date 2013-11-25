@@ -90,6 +90,10 @@ double recursive(hpnla_gemm* gemm, size_t m, size_t k, size_t n,
 	size_t row = myrank / size_row;
 	size_t col = myrank % size_row;
 
+        printf("my_rank=%d, size_row=%zu, row=%zu, col=%zu\n", myrank, size_row, row, col);
+
+        
+        
 	// matrix sizes
 	m = m / (size_col * size_group_col);
 	n = n / (size_row * size_group_row);

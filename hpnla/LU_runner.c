@@ -28,19 +28,19 @@
 
 int main(int argc, char ** argv) {
 
-    LU_data* lu_data = malloc(sizeof (LU_data));
-    if (lu_data==NULL) {
+    HLU_data* hlu_data = malloc(sizeof (HLU_data));
+    if (hlu_data==NULL) {
          printf("malloc failed\n");
          return -1;
     }
     Platform_data* platform_data = malloc(sizeof (Platform_data));
 
-    lu_data->Block_size_in = 32;
-    lu_data->Block_size_out = lu_data->Block_size_in;
-    lu_data->m_global = 1024;
-    lu_data->n_global = 1024;
-    lu_data->k_global = 1024;
-    lu_data->bcast_algorithm = 4; //original algorithm inside mpi
+    hlu_data->Block_size_in = 32;
+    hlu_data->Block_size_out = hlu_data->Block_size_in;
+    hlu_data->m_global = 1024;
+    hlu_data->n_global = 1024;
+    hlu_data->k_global = 1024;
+    hlu_data->bcast_algorithm = 4; //original algorithm inside mpi
 
 
     platform_data->size_group_col = 1;
@@ -109,34 +109,34 @@ int main(int argc, char ** argv) {
                         "	-s  display the configuration file on the stderr\n"
                         "   -d I    is_cyclic distribution or not (default: %d)\n"
                         "	-h	help\n",
-                        lu_data->m_global,
-                        lu_data->n_global,
-                        lu_data->k_global,
-                        lu_data->Block_size_in,
-                        lu_data->Block_size_out,
+                        hlu_data->m_global,
+                        hlu_data->n_global,
+                        hlu_data->k_global,
+                        hlu_data->Block_size_in,
+                        hlu_data->Block_size_out,
                         platform_data->size_group_col,
                         platform_data->size_group_row,
-                        lu_data->group,
-                        lu_data->key,
+                        hlu_data->group,
+                        hlu_data->key,
                         row,
                         col,
-                        lu_data->bcast_algorithm,
-                        lu_data->distribution);
+                        hlu_data->bcast_algorithm,
+                        hlu_data->distribution);
                 return 0;
             case 'M':
-                lu_data->m_global = atoi(optarg);
+                hlu_data->m_global = atoi(optarg);
                 break;
             case 'N':
-                lu_data->n_global = atoi(optarg);
+                hlu_data->n_global = atoi(optarg);
                 break;
             case 'K':
-                lu_data->k_global = atoi(optarg);
+                hlu_data->k_global = atoi(optarg);
                 break;
             case 'B':
-                lu_data->Block_size_in = atoi(optarg);
+                hlu_data->Block_size_in = atoi(optarg);
                 break;
             case 'T':
-                lu_data->Block_size_out = atoi(optarg);
+                hlu_data->Block_size_out = atoi(optarg);
                 break;
             case 'R':
                 platform_data->size_group_row = atoi(optarg);
@@ -145,10 +145,10 @@ int main(int argc, char ** argv) {
                 platform_data->size_group_col = atoi(optarg);
                 break;
             case 'g':
-                lu_data->group = atoi(optarg);
+                hlu_data->group = atoi(optarg);
                 break;
             case 'k':
-                lu_data->key = atoi(optarg);
+                hlu_data->key = atoi(optarg);
                 break;
             case 'r':
                 platform_data->size_row = atoi(optarg);
@@ -157,10 +157,10 @@ int main(int argc, char ** argv) {
                 platform_data->size_col = atoi(optarg);
                 break;
             case 'a':
-                lu_data->bcast_algorithm = atoi(optarg);
+                hlu_data->bcast_algorithm = atoi(optarg);
                 break;
             case 'd':
-                lu_data->distribution = atoi(optarg);
+                hlu_data->distribution = atoi(optarg);
                 break;
             case 'f':
                 conf_file = strdup(optarg);
@@ -198,10 +198,10 @@ int main(int argc, char ** argv) {
 
         if (hpnla_bind_process(conf.bind) == -1) goto end;
 
-        lu_data->group = (size_t) atoi(conf.subopts);
+        hlu_data->group = (size_t) atoi(conf.subopts);
     }
 
-    lu_data->gemm = hpnla_gemm_alloc(&conf);
+    hlu_data->gemm = hpnla_gemm_alloc(&conf);
 
     
     int i = 0;
@@ -213,11 +213,11 @@ int main(int argc, char ** argv) {
         sleep(5);
     */
     
-    lu_hfactorize(lu_data, platform_data);
+    lu_hfactorize(hlu_data, platform_data);
 
     // close the resources
-    hpnla_gemm_free(lu_data->gemm);
-    SMPI_SHARED_FREE(lu_data);
+    hpnla_gemm_free(hlu_data->gemm);
+    SMPI_SHARED_FREE(hlu_data);
     SMPI_SHARED_FREE(platform_data);
 end:
     MPI_Barrier(MPI_COMM_WORLD);

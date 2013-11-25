@@ -5,8 +5,8 @@
  * Created on 22 November 2013, 12:44
  */
 
-#ifndef LU_FACTORIZATION_H
-#define	LU_FACTORIZATION_H
+#ifndef LU_HFACTORIZATION_H
+#define	LU_HFACTORIZATION_H
 
 #include "cblas_wrappers/hpnla_cblas.h"
 
@@ -14,7 +14,7 @@
 extern "C" {
 #endif
 
-    typedef struct LU_data {
+    typedef struct HLU_data {
         hpnla_gemm* gemm;
         size_t m_global;
         size_t k_global;
@@ -34,7 +34,7 @@ extern "C" {
         int bcast_algorithm;
         int distribution; // not used for now
 
-    } LU_data;
+    } HLU_data;
 
     typedef struct Platform_data {
         size_t size_row;
@@ -48,9 +48,9 @@ extern "C" {
     } Platform_data;
 
 
-    double lu_factorize(LU_data* lu_data, Platform_data* platform_data);
+    double lu_hfactorize(HLU_data* lu_data, Platform_data* platform_data);
 
-    int validate_input(LU_data* lu_data, Platform_data* platform_data);
+    int validate_input(HLU_data* lu_data, Platform_data* platform_data);
 
 
 
@@ -59,5 +59,5 @@ extern "C" {
 }
 #endif
 
-#endif	/* LU_FACTORIZATION_H */
+#endif	/* LU_HFACTORIZATION_H */
 
