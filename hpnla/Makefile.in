@@ -36,7 +36,7 @@ build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS = cblas_test$(EXEEXT) gemm_block$(EXEEXT) \
 	gemm_block_mpi$(EXEEXT) MM_mpi$(EXEEXT) MM_recursive$(EXEEXT) \
-	Cannon$(EXEEXT)
+	Cannon$(EXEEXT) LU_runner$(EXEEXT)
 subdir = hpnla
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -56,6 +56,13 @@ Cannon_OBJECTS = $(am_Cannon_OBJECTS)
 Cannon_DEPENDENCIES =  \
 	$(top_builddir)/cblas_wrappers/libcblas_wrappers.la \
 	$(top_builddir)/tools/libhpnla_tools.la
+am_LU_runner_OBJECTS = LU_runner.$(OBJEXT) Matrix_init.$(OBJEXT) \
+	lu_factorization.$(OBJEXT)
+LU_runner_OBJECTS = $(am_LU_runner_OBJECTS)
+LU_runner_DEPENDENCIES =  \
+	$(top_builddir)/cblas_wrappers/libcblas_wrappers.la \
+	$(top_builddir)/tools/libhpnla_tools.la \
+	$(top_builddir)/communication/libhpnla_bcast.la
 am_MM_mpi_OBJECTS = MM_mpi.$(OBJEXT) Summa.$(OBJEXT) \
 	Matrix_init.$(OBJEXT) 2.5D_MM.$(OBJEXT)
 MM_mpi_OBJECTS = $(am_MM_mpi_OBJECTS)
@@ -110,15 +117,17 @@ CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
 SOURCES = $(Cannon_SOURCES) $(nodist_EXTRA_Cannon_SOURCES) \
+	$(LU_runner_SOURCES) $(nodist_EXTRA_LU_runner_SOURCES) \
 	$(MM_mpi_SOURCES) $(nodist_EXTRA_MM_mpi_SOURCES) \
 	$(MM_recursive_SOURCES) $(nodist_EXTRA_MM_recursive_SOURCES) \
 	$(cblas_test_SOURCES) $(nodist_EXTRA_cblas_test_SOURCES) \
 	$(gemm_block_SOURCES) $(nodist_EXTRA_gemm_block_SOURCES) \
 	$(gemm_block_mpi_SOURCES) \
 	$(nodist_EXTRA_gemm_block_mpi_SOURCES)
-DIST_SOURCES = $(Cannon_SOURCES) $(MM_mpi_SOURCES) \
-	$(MM_recursive_SOURCES) $(cblas_test_SOURCES) \
-	$(gemm_block_SOURCES) $(gemm_block_mpi_SOURCES)
+DIST_SOURCES = $(Cannon_SOURCES) $(LU_runner_SOURCES) \
+	$(MM_mpi_SOURCES) $(MM_recursive_SOURCES) \
+	$(cblas_test_SOURCES) $(gemm_block_SOURCES) \
+	$(gemm_block_mpi_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -351,6 +360,21 @@ MM_recursive_LDADD = \
   $(top_builddir)/tools/libhpnla_tools.la \
   $(top_builddir)/communication/libhpnla_bcast.la
 
+
+# 2D LU factorization
+LU_runner_SOURCES = \
+  LU_runner.c \
+  Matrix_init.c \
+  Matrix_init.h \
+  lu_factorization.c \
+  lu_factorization.h 
+
+nodist_EXTRA_LU_runner_SOURCES = dummy.cpp
+LU_runner_LDADD = \
+  $(top_builddir)/cblas_wrappers/libcblas_wrappers.la \
+  $(top_builddir)/tools/libhpnla_tools.la \
+  $(top_builddir)/communication/libhpnla_bcast.la
+
 all: all-am
 
 .SUFFIXES:
@@ -431,6 +455,9 @@ clean-binPROGRAMS:
 Cannon$(EXEEXT): $(Cannon_OBJECTS) $(Cannon_DEPENDENCIES) $(EXTRA_Cannon_DEPENDENCIES) 
 	@rm -f Cannon$(EXEEXT)
 	$(CXXLINK) $(Cannon_OBJECTS) $(Cannon_LDADD) $(LIBS)
+LU_runner$(EXEEXT): $(LU_runner_OBJECTS) $(LU_runner_DEPENDENCIES) $(EXTRA_LU_runner_DEPENDENCIES) 
+	@rm -f LU_runner$(EXEEXT)
+	$(CXXLINK) $(LU_runner_OBJECTS) $(LU_runner_LDADD) $(LIBS)
 MM_mpi$(EXEEXT): $(MM_mpi_OBJECTS) $(MM_mpi_DEPENDENCIES) $(EXTRA_MM_mpi_DEPENDENCIES) 
 	@rm -f MM_mpi$(EXEEXT)
 	$(CXXLINK) $(MM_mpi_OBJECTS) $(MM_mpi_LDADD) $(LIBS)
@@ -455,6 +482,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/2.5D_MM.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Cannon.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/LU_runner.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MM_cannon.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MM_mpi.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MM_recursive.Po@am__quote@
@@ -465,6 +493,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dummy.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gemm_block.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gemm_block_mpi.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lu_factorization.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

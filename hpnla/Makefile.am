@@ -1,7 +1,7 @@
 AM_CPPFLAGS = -I$(top_builddir) -I$(top_srcdir) \
               -I$(top_builddir)/cblas_wrappers -I$(top_srcdir)/cblas_wrappers
 
-bin_PROGRAMS = cblas_test gemm_block gemm_block_mpi MM_mpi MM_recursive Cannon
+bin_PROGRAMS = cblas_test gemm_block gemm_block_mpi MM_mpi MM_recursive Cannon LU_runner
 
 #Cannon example
 Cannon_SOURCES = \
@@ -75,3 +75,20 @@ MM_recursive_LDADD = \
   $(top_builddir)/cblas_wrappers/libcblas_wrappers.la \
   $(top_builddir)/tools/libhpnla_tools.la \
   $(top_builddir)/communication/libhpnla_bcast.la
+
+
+
+# 2D LU factorization
+LU_runner_SOURCES = \
+  LU_runner.c \
+  Matrix_init.c \
+  Matrix_init.h \
+  lu_factorization.c \
+  lu_factorization.h 
+
+nodist_EXTRA_LU_runner_SOURCES = dummy.cpp
+LU_runner_LDADD = \
+  $(top_builddir)/cblas_wrappers/libcblas_wrappers.la \
+  $(top_builddir)/tools/libhpnla_tools.la \
+  $(top_builddir)/communication/libhpnla_bcast.la
+

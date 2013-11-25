@@ -13,28 +13,42 @@
 #include "lu_factorization.h"
 #include "hpnla_cblas.h"
 
+#ifdef HDNLA_SMPI
+#include <smpi.h>
+#else
+#define SMPI_SHARED_FREE free
+#endif
+
 #include <mpi.h>
 #include <math.h>
 #include <getopt.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 int main(int argc, char ** argv) {
 
-    LU_data* lu_data= malloc(sizeof(LU_data));
+    LU_data* lu_data = malloc(sizeof (LU_data));
+    if (lu_data==NULL) {
+         printf("malloc failed\n");
+         return -1;
+    }
+    Platform_data* platform_data = malloc(sizeof (Platform_data));
 
     lu_data->Block_size_in = 32;
     lu_data->Block_size_out = lu_data->Block_size_in;
-    lu_data->size_group_col = 1;
-    lu_data->size_group_row = 1;
-    lu_data->m = 1024;
-    lu_data->n = 1024;
-    lu_data->k = 1024;
+    lu_data->m_global = 1024;
+    lu_data->n_global = 1024;
+    lu_data->k_global = 1024;
     lu_data->bcast_algorithm = 4; //original algorithm inside mpi
-    lu_data->distribution = 0; //default matrix distribution is non-cyclic
 
-    int myrank;
-    int NB_proc;
+
+    platform_data->size_group_col = 1;
+    platform_data->size_group_row = 1;
+
+
+   // int myrank;
+  //  int NB_proc;
     size_t row, col;
     row = 0;
     col = 0;
@@ -47,22 +61,24 @@ int main(int argc, char ** argv) {
 
     MPI_Init(&argc, &argv);
 
-    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-    MPI_Comm_size(MPI_COMM_WORLD, &NB_proc);
+    platform_data->comm = MPI_COMM_WORLD;
+    MPI_Comm_rank(MPI_COMM_WORLD, &platform_data->my_rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &platform_data->nb_proc);
 
-    if (NB_proc != 1)
-        for (lu_data->size_col = NB_proc / 2; NB_proc % lu_data->size_col; lu_data->size_col--);
+    if (platform_data->nb_proc != 1)
+        for (platform_data->size_col = platform_data->nb_proc / 2; 
+                platform_data->nb_proc % platform_data->size_col; platform_data->size_col--);
     else
-        lu_data->size_col = 1;
+        platform_data->size_col = 1;
 
-    lu_data->size_row = NB_proc / lu_data->size_col;
-    if (lu_data->size_row > lu_data->size_col) {
-        lu_data->size_col = lu_data->size_row;
-        lu_data->size_row = NB_proc / lu_data->size_col;
+    platform_data->size_row = platform_data->nb_proc / platform_data->size_col;
+    if (platform_data->size_row > platform_data->size_col) {
+        platform_data->size_col = platform_data->size_row;
+        platform_data->size_row = platform_data->nb_proc / platform_data->size_col;
     }
 
 
-    // for the degub
+    // for debug
 #if DEBUG_MPI
     size_t loop = 1;
     while (loop == 1);
@@ -93,13 +109,13 @@ int main(int argc, char ** argv) {
                         "	-s  display the configuration file on the stderr\n"
                         "   -d I    is_cyclic distribution or not (default: %d)\n"
                         "	-h	help\n",
-                        lu_data->m,
-                        lu_data->n,
-                        lu_data->k,
+                        lu_data->m_global,
+                        lu_data->n_global,
+                        lu_data->k_global,
                         lu_data->Block_size_in,
                         lu_data->Block_size_out,
-                        lu_data->size_group_col,
-                        lu_data->size_group_row,
+                        platform_data->size_group_col,
+                        platform_data->size_group_row,
                         lu_data->group,
                         lu_data->key,
                         row,
@@ -108,13 +124,13 @@ int main(int argc, char ** argv) {
                         lu_data->distribution);
                 return 0;
             case 'M':
-                lu_data->m = atoi(optarg);
+                lu_data->m_global = atoi(optarg);
                 break;
             case 'N':
-                lu_data->n = atoi(optarg);
+                lu_data->n_global = atoi(optarg);
                 break;
             case 'K':
-                lu_data->k = atoi(optarg);
+                lu_data->k_global = atoi(optarg);
                 break;
             case 'B':
                 lu_data->Block_size_in = atoi(optarg);
@@ -123,10 +139,10 @@ int main(int argc, char ** argv) {
                 lu_data->Block_size_out = atoi(optarg);
                 break;
             case 'R':
-                lu_data->size_group_row = atoi(optarg);
+                platform_data->size_group_row = atoi(optarg);
                 break;
             case 'C':
-                lu_data->size_group_col = atoi(optarg);
+                platform_data->size_group_col = atoi(optarg);
                 break;
             case 'g':
                 lu_data->group = atoi(optarg);
@@ -135,10 +151,10 @@ int main(int argc, char ** argv) {
                 lu_data->key = atoi(optarg);
                 break;
             case 'r':
-                lu_data->size_row = atoi(optarg);
+                platform_data->size_row = atoi(optarg);
                 break;
             case 'c':
-                lu_data->size_col = atoi(optarg);
+                platform_data->size_col = atoi(optarg);
                 break;
             case 'a':
                 lu_data->bcast_algorithm = atoi(optarg);
@@ -154,9 +170,13 @@ int main(int argc, char ** argv) {
                 break;
         }
     }
+    
+    
+    platform_data->nb_requested_proc = platform_data->size_row*platform_data->size_col*platform_data->size_group_row*platform_data->size_group_col;
+    
 
     if (display == 1) {
-        hpnla_print_conf(MPI_COMM_WORLD, myrank, stderr, "", "");
+        hpnla_print_conf(MPI_COMM_WORLD, platform_data->my_rank, stderr, "", "");
         MPI_Barrier(MPI_COMM_WORLD);
         exit(0);
     }
@@ -185,11 +205,22 @@ int main(int argc, char ** argv) {
 
     lu_data->gemm = hpnla_gemm_alloc(&conf);
 
-    lu_factorize(lu_data);
+    
+    int i = 0;
+    char hostname[256];
+    gethostname(hostname, sizeof(hostname));
+  /*  printf("PID %d on %s ready for attach\n", getpid(), hostname);
+    fflush(stdout);
+    while (0 == i)
+        sleep(5);
+    */
+    
+    lu_factorize(lu_data, platform_data);
 
-    // close properly the pragram
+    // close the resources
     hpnla_gemm_free(lu_data->gemm);
-
+    SMPI_SHARED_FREE(lu_data);
+    SMPI_SHARED_FREE(platform_data);
 end:
     MPI_Barrier(MPI_COMM_WORLD);
     MPI_Finalize();
