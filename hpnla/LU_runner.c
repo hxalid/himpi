@@ -10,7 +10,7 @@
 #include "tools/hpnla_debug.h"
 #include "tools/hpnla_bind.h"
 #include "Matrix_init.h"
-#include "lu_factorization.h"
+#include "lu_hfactorization.h"
 #include "hpnla_cblas.h"
 
 #ifdef HDNLA_SMPI
@@ -194,13 +194,11 @@ int main(int argc, char ** argv) {
                 "No configuration for me inside the file\n");
     } else {
 
-        info_print(0, row, col, "my_rank:%d, my_group:%s\n", conf.rank_intra, conf.subopts);
+      //  info_print(0, row, col, "my_rank:%d, my_group:%s\n", conf.rank_intra, conf.subopts);
 
         if (hpnla_bind_process(conf.bind) == -1) goto end;
 
-
         lu_data->group = (size_t) atoi(conf.subopts);
-
     }
 
     lu_data->gemm = hpnla_gemm_alloc(&conf);
@@ -215,7 +213,7 @@ int main(int argc, char ** argv) {
         sleep(5);
     */
     
-    lu_factorize(lu_data, platform_data);
+    lu_hfactorize(lu_data, platform_data);
 
     // close the resources
     hpnla_gemm_free(lu_data->gemm);

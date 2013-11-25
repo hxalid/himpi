@@ -83,8 +83,8 @@ LU_runner_SOURCES = \
   LU_runner.c \
   Matrix_init.c \
   Matrix_init.h \
-  lu_factorization.c \
-  lu_factorization.h 
+  lu_hfactorization.c \
+  lu_hfactorization.h 
 
 nodist_EXTRA_LU_runner_SOURCES = dummy.cpp
 LU_runner_LDADD = \
