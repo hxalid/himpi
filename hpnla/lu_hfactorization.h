@@ -5,8 +5,8 @@
  * Created on 22 November 2013, 12:44
  */
 
-#ifndef LU_HFACTORIZATION_H
-#define	LU_HFACTORIZATION_H
+#ifndef HLU_FACTORIZATION_H
+#define	HLU_HFACTORIZATION_H
 
 #include "cblas_wrappers/hpnla_cblas.h"
 
@@ -48,9 +48,9 @@ extern "C" {
     } Platform_data;
 
 
-    double lu_hfactorize(HLU_data* lu_data, Platform_data* platform_data);
+    double lu_hfactorize(HLU_data* hlu_data, Platform_data* platform_data);
 
-    int validate_input(HLU_data* lu_data, Platform_data* platform_data);
+    int validate_input(HLU_data* hlu_data, Platform_data* platform_data);
 
 
 
@@ -59,5 +59,5 @@ extern "C" {
 }
 #endif
 
-#endif	/* LU_HFACTORIZATION_H */
+#endif	/* HLU_FACTORIZATION_H */
 
