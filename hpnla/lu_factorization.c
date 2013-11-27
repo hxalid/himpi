@@ -3,19 +3,9 @@
  *
  * Authors: Khalid Hasanov
  */
-#include "config.h"
-#include "Matrix_init.h"
-#include "tools/hpnla_debug.h"
-#include "tools/hpnla_timer.h"
-#include "communication/hpnla_bcast.h"
-#include "cblas_wrappers/hpnla_cblas.h"
+
 #include "lu_factorization.h"
-#include <sys/time.h>
-#ifdef HDNLA_SMPI
-#include <smpi.h>
-#else
-#define SMPI_SAMPLE_GLOBAL(x,y) do{}while(0);
-#endif
+
 
 inline double lu_factorize(LU_data* lu_data, Platform_data* platform_data) {
 
@@ -24,17 +14,17 @@ inline double lu_factorize(LU_data* lu_data, Platform_data* platform_data) {
     size_t B_proc_col, B_proc_row; // Number of bloc(row or col) on one processor
 
     int nb_proc;
-    int useless = 0;
     size_t size_row = platform_data->size_row;
     size_t size_col = platform_data->size_col;
-    size_t m = lu_data->m_global;
-    size_t n = lu_data->n_global;
     size_t k = lu_data->k_global;
     size_t k_a = k / size_row;
     size_t k_b = k / size_col;
-
-    m = m / size_col;
-    n = n / size_row;
+    size_t m = lu_data->m_global / size_col;
+    size_t n = lu_data->n_global / size_row;
+    lu_data->m = m;
+    lu_data->n = n;
+    lu_data->k_a = k_a;
+    lu_data->k_b = k_b;
 
     size_t Block_size = lu_data->Block_size;
     size_t key = lu_data->key;
@@ -48,13 +38,14 @@ inline double lu_factorize(LU_data* lu_data, Platform_data* platform_data) {
     size_t lda_local = lda;
     size_t ldb_local = ldb;
 
+    lu_data->nb_block = k / Block_size;
 
     init_timer();
 
     struct timespec start_time, end_time; //time measure
     struct timespec start_time_intern, end_time_intern; //time measure
     double time, communication_time = 0, computation_time;
-    
+
 
     /*--------------------Communication types for MPI--------------------------*/
     MPI_Datatype Block_a;
@@ -69,7 +60,7 @@ inline double lu_factorize(LU_data* lu_data, Platform_data* platform_data) {
     /*-------------Communication types for MPI are configured------------------*/
 
 
-  //  MPI_Barrier(platform_data->comm);
+    //  MPI_Barrier(platform_data->comm);
 
     MPI_Comm my_world;
     MPI_Comm_split(platform_data->comm, 1, key, &my_world);
@@ -90,46 +81,23 @@ inline double lu_factorize(LU_data* lu_data, Platform_data* platform_data) {
     size_t row = platform_data->my_rank / size_row;
     size_t col = platform_data->my_rank % size_row;
 
-    
-    double *a,  *b,  *c;
+
+    printf("my_rank:%d, size_row:%zu, size_col:%zu, row:%zu, col%zu\n",
+            platform_data->my_rank, size_row, size_col, row, col);
+
+
+    double *a, *b, *c;
     matrices_initialisation(&a, &b, &c, m, k_a, k_b, n, row, col);
 
     double *a_local, *b_local;
     blocks_initialisation(&a_local, &b_local, m, Block_size, n);
 
 
-    /*-------------------------Check some mandatory conditions------------------*/
-    size_t nb_block = k / Block_size;
-    if (k % Block_size != 0) {
-        info_print(0, row, col,
-                "The matrix size has to be proportional to the number\
-                of blocks: %zu\n", nb_block);
-        return -1;
+    if (lu_factorize(lu_data, platform_data) == EXIT_FAILURE) {
+        return EXIT_FAILURE;
     }
 
-    if (size_row > nb_block || size_col > nb_block) {
-        info_print(0, row, col,
-                "Number of blocks is too small compare to the number of"
-                " processors (%zu,%zu) in a row or a col (%zu)\n",
-                size_col, size_row, nb_block);
-        return -1;
-    }
-
-    if (nb_block % size_row != 0 || nb_block % size_col != 0) {
-        info_print(0, row, col, "The number of Block by processor is not an %s",
-                "integer\n");
-        return -1;
-    }
-
-    if (row >= size_col || col >= size_row) {
-        info_print(0, row, col, "I'm useless bye!!! col: %zu row: %zu, "
-                "size_col: %zu , size_row: %zu \n",
-                col, row, size_col, size_row);
-        useless = 1;
-    }
-
-
-    if (useless == 1) {
+    if (platform_data->useless == 1) {
         /*----------------------Prepare the Communication Layer-------------------*/
         /* add useless processor on a new color to execute the matrix
          * multiplication with the other processors*/
@@ -165,7 +133,7 @@ inline double lu_factorize(LU_data* lu_data, Platform_data* platform_data) {
     get_time(&start_time);
 
     int start = 0;
-    int end = nb_block;
+    int end = lu_data->nb_block;
 
     /*-------------Distributed LU factorization algorithm-----------------*/
     size_t iter;
@@ -259,7 +227,64 @@ inline double lu_factorize(LU_data* lu_data, Platform_data* platform_data) {
     get_time(&end_time);
     time = get_timediff(&start_time, &end_time);
 
+    check_result(c, a, b, m, n, k_a, k_b, row, col, size_row, size_col);
+
+    printf("communication time: %le microseconds, " "computation time: %le microseconds\n", communication_time, computation_time);
+
+
+    // close properly the pragram
+
+    MPI_Type_free(&Block_a);
+    MPI_Type_free(&Block_a_local);
+    MPI_Type_free(&Block_b);
+
+    SMPI_SHARED_FREE(a_local);
+    SMPI_SHARED_FREE(b_local);
+
+
+    SMPI_SHARED_FREE(a);
+    SMPI_SHARED_FREE(b);
+    SMPI_SHARED_FREE(c);
+
+    MPI_Comm_free(&my_world);
+    MPI_Comm_free(&row_comm);
+    MPI_Comm_free(&col_comm);
 
     return time;
 }
 
+int validate_input(LU_data* lu_data, Platform_data* platform_data) {
+
+    if (lu_data->k_global % lu_data->Block_size != 0) {
+        info_print(0, lu_data->row, lu_data->col,
+                "The matrix size has to be proportional to the number\
+                of blocks: %zu\n", lu_data->nb_block);
+        return EXIT_FAILURE;
+    }
+
+    if (platform_data->size_row > lu_data->nb_block || platform_data->size_col > lu_data->nb_block) {
+        info_print(0, lu_data->row, lu_data->col,
+                "Number of blocks is too small compare to the number of"
+                " processors (%zu,%zu) in a row or a col (%zu)\n",
+                platform_data->size_col, platform_data->size_row, lu_data->nb_block);
+        return EXIT_FAILURE;
+    }
+
+    if (lu_data->nb_block % platform_data->size_row != 0 || lu_data->nb_block % platform_data->size_col != 0) {
+        info_print(0, lu_data->row, lu_data->col, "The number of Block by processor is not an %s",
+                "integer\n");
+        return EXIT_FAILURE;
+    }
+
+    platform_data->useless = 0;
+    if (lu_data->row >= platform_data->size_col || lu_data->col >= platform_data->size_row) {
+        info_print(0, lu_data->row, lu_data->col, "I'm useless bye!!! col: %zu row: %zu, "
+                "size_col: %zu , size_row: %zu \n",
+                lu_data->col, lu_data->row, platform_data->size_col, platform_data->size_row);
+        platform_data->useless = 1;
+
+        return EXIT_SUCCESS;
+    }
+
+
+}

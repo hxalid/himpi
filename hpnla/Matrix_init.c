@@ -49,7 +49,8 @@ void matrices_initialisation(double ** p_a, double ** p_b, double ** p_c,
     *p_a = a;
     *p_b = b;
     *p_c = c;
-
+    
+    
     //initialization of the matrices
     for (x = 0; x < m; x++) {
         for (z = 0; z < k_a; z++) {
@@ -57,18 +58,25 @@ void matrices_initialisation(double ** p_a, double ** p_b, double ** p_c,
             a[x * lda + z] = 1;
 #else
             a[x * lda + z] = (double) (z + col * n);
+  //          printf("a[%d][%d]=%f\t", x, z, a[x * lda + z]);
 #endif
         }
+ //       printf("\n");
     }
+    
+ //   printf("*********m=%d, n=%d, k_b=%d, k_a=%d********\n",m, n, k_b, k_a);
     for (z = 0; z < k_b; z++) {
         for (y = 0; y < n; y++) {
 #ifdef SIMPLE_MATRIX
             b[z * ldb + y] = 1;
 #else
             b[z * ldb + y] = (double) (y);
+        //    printf("b[%d][%d]=%f\t", z, y, b[z * ldb + y]);
 #endif
         }
+    //    printf("\n");
     }
+    
     for (x = 0; x < m; x++) {
         for (y = 0; y < n; y++) {
             c[x * ldc + y] = 0;

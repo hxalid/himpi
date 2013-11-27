@@ -8,7 +8,21 @@
 #ifndef LU_FACTORIZE_H
 #define	LU_FACTORIZE_H
 
+#include "config.h"
+#include "Matrix_init.h"
+#include "tools/hpnla_debug.h"
+#include "tools/hpnla_timer.h"
+#include "communication/hpnla_bcast.h"
 #include "cblas_wrappers/hpnla_cblas.h"
+#ifdef HDNLA_SMPI
+#include <smpi.h>
+#else
+#define SMPI_SAMPLE_GLOBAL(x,y) do{}while(0);
+#define SMPI_SHARED_FREE free
+#endif
+
+#include <sys/time.h>
+
 
 #ifdef	__cplusplus
 extern "C" {
@@ -25,6 +39,7 @@ extern "C" {
         size_t k_a;
         size_t k_b;
         size_t Block_size;
+        size_t nb_block;
         size_t key;
         size_t row;
         size_t col;
@@ -34,6 +49,7 @@ extern "C" {
     } LU_data;
 
     typedef struct Platform_data {
+        int useless;
         size_t size_row;
         size_t size_col;
         int my_rank;
