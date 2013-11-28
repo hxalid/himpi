@@ -54,18 +54,18 @@ int main(int argc, char ** argv) {
 
     platform_data->comm = MPI_COMM_WORLD;
     MPI_Comm_rank(MPI_COMM_WORLD, &platform_data->my_rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &platform_data->nb_proc);
+    MPI_Comm_size(MPI_COMM_WORLD, &platform_data->nb_procs);
 
-    if (platform_data->nb_proc != 1)
-        for (platform_data->size_col = platform_data->nb_proc / 2;
-                platform_data->nb_proc % platform_data->size_col; platform_data->size_col--);
+    if (platform_data->nb_procs != 1)
+        for (platform_data->size_col = platform_data->nb_procs / 2;
+                platform_data->nb_procs % platform_data->size_col; platform_data->size_col--);
     else
         platform_data->size_col = 1;
 
-    platform_data->size_row = platform_data->nb_proc / platform_data->size_col;
+    platform_data->size_row = platform_data->nb_procs / platform_data->size_col;
     if (platform_data->size_row > platform_data->size_col) {
         platform_data->size_col = platform_data->size_row;
-        platform_data->size_row = platform_data->nb_proc / platform_data->size_col;
+        platform_data->size_row = platform_data->nb_procs / platform_data->size_col;
     }
 
 
@@ -143,7 +143,7 @@ int main(int argc, char ** argv) {
     }
 
 
-    platform_data->nb_requested_proc = platform_data->size_row * platform_data->size_col;
+    platform_data->nb_requested_procs = platform_data->size_row * platform_data->size_col;
 
 
     if (display == 1) {

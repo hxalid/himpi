@@ -55,19 +55,15 @@ extern "C" {
         size_t size_row;
         size_t size_col;
         int my_rank;
-        int nb_proc;
-        size_t nb_requested_proc;
+        int nb_procs;
+        size_t nb_requested_procs;
         MPI_Comm comm;
     } Platform_data;
 
 
     double lu_factorize(LU_data* lu_data, Platform_data* platform_data);
 
-    int validate_input(LU_data* lu_data, Platform_data* platform_data);
-
-
-    
-
+    int validate_input(LU_data* lu_data, Platform_data* platform_data); 
 
 
 #ifdef	__cplusplus

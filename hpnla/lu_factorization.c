@@ -8,11 +8,10 @@
 
 double lu_factorize(LU_data* lu_data, Platform_data* platform_data) {
 
-    double *B_a, *B_b;                  // matrix blocks
-    double alpha = 1, beta = 1;         // C := alpha * a * b + beta * c
-    size_t B_proc_col, B_proc_row;      // Number of bloc(row or col) on one processor
+    double *B_a, *B_b; // matrix blocks
+    double alpha = 1, beta = 1; // C := alpha * a * b + beta * c
+    size_t B_proc_col, B_proc_row; // Number of bloc(row or col) on one processor
 
-    int nb_proc;
     size_t size_row = platform_data->size_row;
     size_t size_col = platform_data->size_col;
     size_t k = lu_data->k_global;
@@ -41,10 +40,27 @@ double lu_factorize(LU_data* lu_data, Platform_data* platform_data) {
     init_timer();
 
     struct timespec start_time, end_time;                       //time measure
-    struct timespec start_time_intern, end_time_intern;        
+    struct timespec start_time_intern, end_time_intern;
     double time, communication_time = 0, computation_time;
 
+    MPI_Comm my_world;
+    MPI_Comm_split(platform_data->comm, 1, key, &my_world);
 
+    MPI_Comm_size(my_world, &platform_data->nb_procs);
+    MPI_Comm_rank(my_world, &platform_data->my_rank);
+    
+    size_t row = platform_data->my_rank / size_row;
+    size_t col = platform_data->my_rank % size_row;
+    lu_data->row = row;
+    lu_data->col = col;
+    
+
+    if (validate_input(lu_data, platform_data) == EXIT_FAILURE) {
+        MPI_Comm_free(&my_world);
+        return EXIT_FAILURE;
+    }
+    
+    
     /*--------------------Communication types for MPI--------------------------*/
     MPI_Datatype Block_a;
     MPI_Datatype Block_a_local;
@@ -57,36 +73,11 @@ double lu_factorize(LU_data* lu_data, Platform_data* platform_data) {
     MPI_Type_commit(&Block_b);
     /*-------------Communication types for MPI are configured------------------*/
 
-    MPI_Comm my_world;
-    MPI_Comm_split(platform_data->comm, 1, key, &my_world);
-
-    MPI_Comm_size(my_world, &nb_proc);
-    MPI_Comm_rank(my_world, &platform_data->my_rank);
-
-
-    
-    if (nb_proc < (int) (size_row * size_col)) {
-        info_print(0, (size_t) 0, (size_t) 0,
-                "Not enough processors nb_proc : %d required : %zu\n",
-                nb_proc, size_row * size_col);
-        return -1;
-    }
-
-
-    size_t grid_proc = size_row*size_col;
-    size_t row = platform_data->my_rank / size_row;
-    size_t col = platform_data->my_rank % size_row;
-
     double *a, *b, *c;
     matrices_initialisation(&a, &b, &c, m, k_a, k_b, n, row, col);
 
     double *a_local, *b_local;
     blocks_initialisation(&a_local, &b_local, m, Block_size, n);
-
-
-    if (validate_input(lu_data, platform_data) == EXIT_FAILURE) {
-        return EXIT_FAILURE;
-    }
 
     if (platform_data->useless == 1) {
         /*----------------------Prepare the Communication Layer-------------------*/
@@ -109,7 +100,6 @@ double lu_factorize(LU_data* lu_data, Platform_data* platform_data) {
             , col, row, size_col, size_row, platform_data->my_rank);
 
 
-
     /*------------------------Prepare the Communication Layer-------------------*/
     /* Split comm size_to row and column comms */
     MPI_Comm row_comm, col_comm;
@@ -119,14 +109,11 @@ double lu_factorize(LU_data* lu_data, Platform_data* platform_data) {
     MPI_Comm_split(my_world, col, row, &col_comm);
     /*-------------------------Communication Layer can be used------------------*/
 
-
     get_time(&start_time);
 
     lu_data->iter_start = 0;
     lu_data->iter_end = lu_data->nb_block;
 
-    
-    
     /*-------------Distributed LU factorization algorithm-----------------*/
     size_t iter;
     for (iter = lu_data->iter_start; iter < lu_data->iter_end; iter++) {
@@ -225,7 +212,6 @@ double lu_factorize(LU_data* lu_data, Platform_data* platform_data) {
             "communication time: %le ms, computation time: %le ms\n",
             communication_time, computation_time);
 
-
     /* 
      * close resources
      */
@@ -249,6 +235,13 @@ double lu_factorize(LU_data* lu_data, Platform_data* platform_data) {
 }
 
 int validate_input(LU_data* lu_data, Platform_data* platform_data) {
+
+    if (platform_data->nb_procs < platform_data->nb_requested_procs) {
+        info_print(0, (size_t) 0, (size_t) 0,
+                "Not enough processors nb_proc : %d required : %zu\n",
+                platform_data->nb_procs, platform_data->nb_requested_procs);
+        return EXIT_FAILURE;
+    }
 
     if (lu_data->k_global % lu_data->Block_size != 0) {
         info_print(0, lu_data->row, lu_data->col,
@@ -281,6 +274,4 @@ int validate_input(LU_data* lu_data, Platform_data* platform_data) {
 
         return EXIT_SUCCESS;
     }
-
-
 }
