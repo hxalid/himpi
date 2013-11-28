@@ -29,9 +29,9 @@
 int main(int argc, char ** argv) {
 
     LU_data* lu_data = malloc(sizeof (LU_data));
-    if (lu_data==NULL) {
-         printf("malloc failed\n");
-         return -1;
+    if (lu_data == NULL) {
+        printf("malloc failed\n");
+        return -1;
     }
     Platform_data* platform_data = malloc(sizeof (Platform_data));
 
@@ -41,8 +41,6 @@ int main(int argc, char ** argv) {
     lu_data->k_global = 1024;
     lu_data->bcast_algorithm = 4; //original algorithm inside mpi
 
-   // int myrank;
-  //  int NB_proc;
     size_t row, col;
     row = 0;
     col = 0;
@@ -51,8 +49,7 @@ int main(int argc, char ** argv) {
     char *conf_file = NULL;
     hpnla_process_conf conf;
 
-
-
+    
     MPI_Init(&argc, &argv);
 
     platform_data->comm = MPI_COMM_WORLD;
@@ -60,7 +57,7 @@ int main(int argc, char ** argv) {
     MPI_Comm_size(MPI_COMM_WORLD, &platform_data->nb_proc);
 
     if (platform_data->nb_proc != 1)
-        for (platform_data->size_col = platform_data->nb_proc / 2; 
+        for (platform_data->size_col = platform_data->nb_proc / 2;
                 platform_data->nb_proc % platform_data->size_col; platform_data->size_col--);
     else
         platform_data->size_col = 1;
@@ -144,10 +141,10 @@ int main(int argc, char ** argv) {
                 break;
         }
     }
-    
-    
-    platform_data->nb_requested_proc = platform_data->size_row*platform_data->size_col;
-    
+
+
+    platform_data->nb_requested_proc = platform_data->size_row * platform_data->size_col;
+
 
     if (display == 1) {
         hpnla_print_conf(MPI_COMM_WORLD, platform_data->my_rank, stderr, "", "");
@@ -168,14 +165,13 @@ int main(int argc, char ** argv) {
                 "No configuration for me inside the file\n");
     } else {
 
-      //  info_print(0, row, col, "my_rank:%d, my_group:%s\n", conf.rank_intra, conf.subopts);
+        //  info_print(0, row, col, "my_rank:%d, my_group:%s\n", conf.rank_intra, conf.subopts);
 
         if (hpnla_bind_process(conf.bind) == -1) goto end;
     }
 
     lu_data->gemm = hpnla_gemm_alloc(&conf);
-    
-    
+
     lu_factorize(lu_data, platform_data);
 
     // close the resources

@@ -43,6 +43,8 @@ extern "C" {
         size_t key;
         size_t row;
         size_t col;
+        size_t iter_start;
+        size_t iter_end;
         int bcast_algorithm;
         int distribution;       // not used for now
 

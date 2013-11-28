@@ -6,12 +6,11 @@
 
 #include "lu_factorization.h"
 
+double lu_factorize(LU_data* lu_data, Platform_data* platform_data) {
 
-inline double lu_factorize(LU_data* lu_data, Platform_data* platform_data) {
-
-    double *B_a, *B_b; // matrix blocks
-    double alpha = 1, beta = 1; // C := alpha * a * b + beta * c
-    size_t B_proc_col, B_proc_row; // Number of bloc(row or col) on one processor
+    double *B_a, *B_b;                  // matrix blocks
+    double alpha = 1, beta = 1;         // C := alpha * a * b + beta * c
+    size_t B_proc_col, B_proc_row;      // Number of bloc(row or col) on one processor
 
     int nb_proc;
     size_t size_row = platform_data->size_row;
@@ -21,13 +20,12 @@ inline double lu_factorize(LU_data* lu_data, Platform_data* platform_data) {
     size_t k_b = k / size_col;
     size_t m = lu_data->m_global / size_col;
     size_t n = lu_data->n_global / size_row;
+    size_t Block_size = lu_data->Block_size;
+    size_t key = lu_data->key;
     lu_data->m = m;
     lu_data->n = n;
     lu_data->k_a = k_a;
     lu_data->k_b = k_b;
-
-    size_t Block_size = lu_data->Block_size;
-    size_t key = lu_data->key;
 
     B_proc_col = k_b / Block_size; // Number of block on one processor
     B_proc_row = k_a / Block_size; // Number of block on one processor
@@ -42,8 +40,8 @@ inline double lu_factorize(LU_data* lu_data, Platform_data* platform_data) {
 
     init_timer();
 
-    struct timespec start_time, end_time; //time measure
-    struct timespec start_time_intern, end_time_intern; //time measure
+    struct timespec start_time, end_time;                       //time measure
+    struct timespec start_time_intern, end_time_intern;        
     double time, communication_time = 0, computation_time;
 
 
@@ -59,9 +57,6 @@ inline double lu_factorize(LU_data* lu_data, Platform_data* platform_data) {
     MPI_Type_commit(&Block_b);
     /*-------------Communication types for MPI are configured------------------*/
 
-
-    //  MPI_Barrier(platform_data->comm);
-
     MPI_Comm my_world;
     MPI_Comm_split(platform_data->comm, 1, key, &my_world);
 
@@ -69,6 +64,7 @@ inline double lu_factorize(LU_data* lu_data, Platform_data* platform_data) {
     MPI_Comm_rank(my_world, &platform_data->my_rank);
 
 
+    
     if (nb_proc < (int) (size_row * size_col)) {
         info_print(0, (size_t) 0, (size_t) 0,
                 "Not enough processors nb_proc : %d required : %zu\n",
@@ -81,11 +77,6 @@ inline double lu_factorize(LU_data* lu_data, Platform_data* platform_data) {
     size_t row = platform_data->my_rank / size_row;
     size_t col = platform_data->my_rank % size_row;
 
-
-    printf("my_rank:%d, size_row:%zu, size_col:%zu, row:%zu, col%zu\n",
-            platform_data->my_rank, size_row, size_col, row, col);
-
-
     double *a, *b, *c;
     matrices_initialisation(&a, &b, &c, m, k_a, k_b, n, row, col);
 
@@ -93,7 +84,7 @@ inline double lu_factorize(LU_data* lu_data, Platform_data* platform_data) {
     blocks_initialisation(&a_local, &b_local, m, Block_size, n);
 
 
-    if (lu_factorize(lu_data, platform_data) == EXIT_FAILURE) {
+    if (validate_input(lu_data, platform_data) == EXIT_FAILURE) {
         return EXIT_FAILURE;
     }
 
@@ -129,15 +120,16 @@ inline double lu_factorize(LU_data* lu_data, Platform_data* platform_data) {
     /*-------------------------Communication Layer can be used------------------*/
 
 
-
     get_time(&start_time);
 
-    int start = 0;
-    int end = lu_data->nb_block;
+    lu_data->iter_start = 0;
+    lu_data->iter_end = lu_data->nb_block;
 
+    
+    
     /*-------------Distributed LU factorization algorithm-----------------*/
     size_t iter;
-    for (iter = start; iter < end; iter++) {
+    for (iter = lu_data->iter_start; iter < lu_data->iter_end; iter++) {
         size_t pivot_row, pivot_col, pos_a, pos_b;
 
         // pivot row on processor layer
@@ -161,7 +153,7 @@ inline double lu_factorize(LU_data* lu_data, Platform_data* platform_data) {
             if (pivot_col != col) {
                 B_a = a_local;
                 lda_local = Block_size;
-                debug_print(1, row, col, "recieve B_a %zu,%zu \n", m, Block_size);
+                debug_print(1, row, col, "receive B_a %zu,%zu \n", m, Block_size);
                 Block = &Block_a_local;
             } else {
                 B_a = a + pos_a;
@@ -184,7 +176,7 @@ inline double lu_factorize(LU_data* lu_data, Platform_data* platform_data) {
                 debug_print(1, row, col, "sent B_b Block_size: %zu, pos:%zu \n", ldb, pos_b);
             } else {
                 B_b = b_local;
-                debug_print(1, row, col, "recieve B_b %zu,%zu \n", Block_size, n);
+                debug_print(1, row, col, "receive B_b %zu,%zu \n", Block_size, n);
             }
 
             hpnla_bcast(B_b, 1, Block_b, pivot_row, col_comm, lu_data->bcast_algorithm);
@@ -229,11 +221,14 @@ inline double lu_factorize(LU_data* lu_data, Platform_data* platform_data) {
 
     check_result(c, a, b, m, n, k_a, k_b, row, col, size_row, size_col);
 
-    printf("communication time: %le microseconds, " "computation time: %le microseconds\n", communication_time, computation_time);
+    info_print(0, lu_data->row, lu_data->col,
+            "communication time: %le ms, computation time: %le ms\n",
+            communication_time, computation_time);
 
 
-    // close properly the pragram
-
+    /* 
+     * close resources
+     */
     MPI_Type_free(&Block_a);
     MPI_Type_free(&Block_a_local);
     MPI_Type_free(&Block_b);
@@ -277,6 +272,7 @@ int validate_input(LU_data* lu_data, Platform_data* platform_data) {
     }
 
     platform_data->useless = 0;
+
     if (lu_data->row >= platform_data->size_col || lu_data->col >= platform_data->size_row) {
         info_print(0, lu_data->row, lu_data->col, "I'm useless bye!!! col: %zu row: %zu, "
                 "size_col: %zu , size_row: %zu \n",
