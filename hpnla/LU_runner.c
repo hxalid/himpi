@@ -40,16 +40,26 @@ int main(int argc, char ** argv) {
         return -1;
     }
 
+    debug_data->print_proc_view = 1;
+    debug_data->print_initial_matrix = 1;
+    debug_data->step_pivoting = 1;
+    debug_data->step_dvide = 1;
+    debug_data->step_l0_u1 = 1;
+    debug_data->step_bcast_l_u = 1;
+    debug_data->step_dgemm = 1;
+    debug_data->step_print_final = 1;
+    debug_data->step_print_pvt = 1;
+
     lu_data->block_size = 16;
     lu_data->m = 1024;
     lu_data->n = 1024;
     lu_data->k = 1024;
     lu_data->bcast_algorithm = 4; //original algorithm inside mpi
     lu_data->with_partial_pivoting = 1;
+    
 
-    size_t row, col;
-    row = 0;
-    col = 0;
+    int row =0;
+    int col =0;
 
     int opt, display = 0;
     char *conf_file = NULL;
@@ -77,12 +87,12 @@ int main(int argc, char ** argv) {
                 if (lu_data->rank == 0)
                     info_print(0, row, col,
                         "Usage: LU_factorization [options]\n"
-                        "	-M I	M size (default: %zu)\n"
-                        "	-N I	N size (default: %zu)\n"
-                        "	-K I	K size (default: %zu)\n"
-                        "	-B I	Block size on the k dimension(default: %zu)\n"
-                        "	-r I	processor row size (default: %zu)\n"
-                        "	-c I	processor col size (default: %zu)\n"
+                        "	-M I	M size (default: %d)\n"
+                        "	-N I	N size (default: %d)\n"
+                        "	-K I	K size (default: %d)\n"
+                        "	-B I	Block size on the k dimension(default: %d)\n"
+                        "	-r I	processor row size (default: %d)\n"
+                        "	-c I	processor col size (default: %d)\n"
                         "   -a I    broadcast algorithm (default: %d)\n"
                         "   -f {Filename} provide the file with the configuration\n"
                         "   -s  display the configuration file on the stderr\n"
@@ -139,6 +149,7 @@ int main(int argc, char ** argv) {
         exit(0);
     }
 
+ /*
     if (conf_file == NULL) {
         info_print(0, row, col, "No configuration file\n");
     } else {
@@ -153,11 +164,15 @@ int main(int argc, char ** argv) {
     }
     
     lu_data->gemm = hpnla_gemm_alloc(&conf);
+  
+   */  
     
     lu_factorize(lu_data, debug_data);
 
     // close the resources
-    hpnla_gemm_free(lu_data->gemm);
+  //  hpnla_gemm_free(lu_data->gemm);
+     
+ 
     SMPI_SHARED_FREE(lu_data);
     SMPI_SHARED_FREE(debug_data);
 end:

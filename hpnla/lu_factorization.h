@@ -83,7 +83,7 @@ extern "C" {
   
     void print_matrix(int is, int ib, int rank, int n, int m, double* a, char* matrix_name);
     
-    void matrix_initialisation(double** p_a, int n_loc, int m_loc, int row, int col, int rank);
+    void init_matrix(double** p_a, int n_loc, int m_loc, int row, int col, int rank, int do_ugly);
     
     int max_col_loc(double *a, int num_rows, int row, int col);
     

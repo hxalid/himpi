@@ -128,7 +128,7 @@ double lu_factorize(LU_data* lu_data, Debug_data* debug_data) {
 
 
     // Do some ugly hardcoded matrix init for p=4, n=8, m=8
-    matrix_initialisation(&a, n_loc, m_loc, row, col, me, matrix_initialisation);
+    init_matrix(&a, n_loc, m_loc, row, col, me, do_ugly);
 
     if (print_initial_matrix) {
         print_matrix(0, 0, me, n_loc, m_loc, a, "a");
@@ -568,7 +568,7 @@ double lu_factorize(LU_data* lu_data, Debug_data* debug_data) {
     MPI_Op_free(&mpi_maxloc_dbl_twoindex);
     MPI_Type_free(&mpi_dbl_twoindex);
 
-    MPI_Finalize();
+   // MPI_Finalize();
 
     return 0;
 	
@@ -643,29 +643,29 @@ void print_matrix(int is, int ib, int rank, int n, int m, double* a, char* matri
 
 }
 
-void matrix_initialisation(double** p_a, int n_loc, int m_loc, int row, int col, int rank, int do_ugly) {
+void init_matrix(double** p_a, int n_loc, int m_loc, int row, int col, int rank, int do_ugly) {
     int x, z;
     int lda = m_loc;
     double *a;
 
 
     if (do_ugly) {
-		 if (me==0) {
+		 if (rank==0) {
 			   a[0]=6.0; a[1]=9.0; a[2]=9.0; a[3]=3.0;
 			   a[4]=2.0; a[5]=4.0; a[6]=2.0; a[7]=2.0;
 			   a[8]=1.0; a[9]=9.0; a[10]=7.0; a[11]=3.0;
 			   a[12]=2.0; a[13]=7.0; a[14]=0.0; a[15]=9.0;
-	     } else if (me==1) {
+	     } else if (rank==1) {
 			   a[0]=6.0; a[1]=7.0; a[2]=4.0; a[3]=5.0;
 			   a[4]=5.0; a[5]=6.0; a[6]=8.0; a[7]=6.0;
 			   a[8]=6.0; a[9]=6.0; a[10]=3.0; a[11]=6.0;
 			   a[12]=2.0; a[13]=10.0; a[14]=6.0; a[15]=5.0;		   
-	     } else if (me==2) {
+	     } else if (rank==2) {
 			   a[0]=2.0; a[1]=1.0; a[2]=11.0; a[3]=9.0;
 			   a[4]=0.0; a[5]=10.0; a[6]=8.0; a[7]=6.0;
 			   a[8]=9.0; a[9]=1.0; a[10]=5.0; a[11]=3.0;
 			   a[12]=4.0; a[13]=1.0; a[14]=8.0; a[15]=1.0;
-	     } else if (me==3) {
+	     } else if (rank==3) {
 			   a[0]=4.0; a[1]=7.0; a[2]=12.0; a[3]=5.0;
 			   a[4]=2.0; a[5]=11.0; a[6]=3.0; a[7]=6.0;
 			   a[8]=11.0; a[9]=6.0; a[10]=9.0; a[11]=9.0;
