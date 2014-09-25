@@ -179,7 +179,7 @@ int main(int argc, char ** argv)
   two_dot_five(gemm, m, k, n, Block_size, group, key,
       size_row, size_col,  NB_groups, comm, bcast_algorithm, distribution);
 
-  // close properly the pragram
+  // close resources
   hpnla_gemm_free(gemm);
 end:
   MPI_Barrier(MPI_COMM_WORLD);

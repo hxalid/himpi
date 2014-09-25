@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import sys
 import matplotlib.pyplot as plt
 
@@ -40,7 +42,7 @@ class BcastModels:
         return (communicatorSize - 1) * (self.alpha + self.msgSize * self.beta)
 
     def pipelinedLinearBcast(self, communicatorSize):
-        return (communicatorSize + self.numSegments -1 ) * (self.alpha + self.segMsgSize * self.beta)
+        return (self.numSegments + communicatorSize - 2) * (self.alpha + self.msgSegment * self.beta)
 
     def binomialHbcast(self):
         #TODO
@@ -58,9 +60,19 @@ class BcastModels:
         #TODO
         pass
 
-    def pipelinedLinearHbcast(self):
-        #TODO
+    def pipelinedLinearHbcast(self, communicatorSize, numGroups):
+        if (numGroups == 1 or numGroups == communicatorSize):
+            result = (self.numSegments + communicatorSize - 2) * (self.alpha + self.msgSegment * self.beta)
+        else:
+            result = (2*self.numSegments + (communicatorSize - numGroups*numGroups)/float(numGroups) - 4) * (self.alpha + self.msgSegment * self.beta)
+
+        return result
+
+
+
+    def pipelineBcast(self, communicatorSize, segmentSize):
         pass
+
 
     def mpichBcast(self, communicatorSize):
         if ( self.msgSize < st.SMALL_MSG_SIZE or communicatorSize <= st.MIN_COMM_SIZE ):
@@ -74,9 +86,45 @@ class BcastModels:
 	    return bcastModels.scRgAllgatherBcast(communicatorSize, 1)
 
 
+
     def mpichHbcast(self, communicatorSize, g):
 #	print "mpichHbcast: p=%s, g=%s" % (p, g)
         return self.mpichBcast(communicatorSize/float(g)) + self.mpichBcast(g)
+
+
+
+    def openMPIBcast(self, count, communicatorSize):
+        smallMessageSize = 2048
+        intermediateMessageSize = 370728
+        a_p16  = 3.2118e-6
+        b_p16  = 8.7936
+        a_p64  = 2.3679e-6
+        b_p64  = 1.1787
+        a_p128 = 1.6134e-6
+        b_p128 = 2.1102
+
+        if ( self.msgSize < smallMessageSize or count <= 1 ):
+            return self.binomialBcast(communicatorSize)
+	elif ( self.msgSize < intermediateMessageSize ):
+	    segSize = 1024
+	    return self.splitBinaryBcast(communicatorSize, segSize)
+	elif ( communicatorSize < 13 ):
+	    segSize = 1024 << 3
+	    return self.splitBinaryBcast(communicatorSize, segSize)
+	elif ( communicatorSize < (a_p128 * self.msgSize + b_p128) ):
+            segSize = 1024 << 7
+            return self.pipelineBcast(communicatorSize, segSize)
+	elif ( communicatorSize < (a_p64 * self.msgSize + b_p64) ):
+	    segSize = 1024 << 6
+	    return self.pipelineBcast(communicatorSize, segSize)
+	elif ( communicatorSize < (a_p16 * self.msgSize + b_p16) ):
+	    segSize = 1024 << 4
+	    return self.pipelineBcast(communicatorSize, segSize)
+	else:
+	    segSize = 1024 << 3
+	    return self.pipelineBcast(communicatorSize, segSize)
+
+
 
 
     def isPowOf2(self, number):
@@ -84,7 +132,7 @@ class BcastModels:
 
 
     def __str__(self):
-        return "alg=%s, msgSize=%s, alpha=%s, beat=%s" % (self.alg, self.msgSize, self.alpha, self.beta)
+        return "alg={:d}, msgSize={:f}, alpha={:f}, beta={:.12f}, segmentSize={:f}, numSegments={:f}".format(self.alg, self.msgSize, self.alpha, self.beta, self.msgSegment, self.numSegments)
 
 
 
@@ -104,6 +152,7 @@ ming = 1
 bcastModels = BcastModels(msgSize=msg)
 
 binomialTimes = []
+pipelinedTimes = []
 scRgAllgatherTimes = []
 scRdAllgatherTimes = []
 mpichTimes = []
@@ -114,15 +163,18 @@ p= maxp
 for g in range(ming, p + 1):
     if (p % g == 0):
         groups.append(g)
+	pipelinedTimes.append( round(bcastModels.pipelinedLinearBcast(p), precision) )
         binomialTimes.append( round(bcastModels.binomialBcast(p), precision) )
         scRgAllgatherTimes.append( round(bcastModels.scRgAllgatherBcast(p, g), precision) )
         scRdAllgatherTimes.append( round(bcastModels.scRdAllgatherBcast(p, g), precision) )
         mpichTimes.append( round(bcastModels.mpichBcast(p), precision) )
         mpichHTimes.append( round(bcastModels.mpichHbcast(p, g), precision) )
+	
 
 print "parameters    ", bcastModels
 print "groups        ", groups
 print "binomial      ", binomialTimes
+print "pipelined     ", pipelinedTimes
 print "scRgAllgather ", scRgAllgatherTimes
 print "scRdAllgather ", scRdAllgatherTimes
 print "mpichTimes    ", mpichTimes

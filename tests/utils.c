@@ -18,3 +18,7 @@ char *create_rand_elms(int num_elements) {
     return rand_nums;
 }
 
+
+double hdnla_conf_int(double cl, int reps, double* T) {
+	return fabs(gsl_cdf_tdist_Pinv(cl, reps - 1)) * gsl_stats_sd(T, 1, reps) / sqrt(reps);
+}

@@ -1,8 +1,9 @@
 #ifndef HPNLA_CONF_H_
 #define HPNLA_CONF_H_
 
-#include <mpi.h>
 #include <stdio.h>
+#include <mpi.h>
+
 
 #ifdef __cplusplus
 extern "C" {
