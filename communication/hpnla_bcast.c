@@ -11,10 +11,13 @@ void hpnla_bcast(void *buffer, int count, MPI_Datatype datatype,
   MPI_Status status;
   MPI_Comm_rank ( comm, &myrank );
   MPI_Comm_size ( comm, &size );
+  
   if (size ==1 ) return;
+  
   int pos = (myrank - root+size) %size;
   int i=0;
   myrank +=size;
+  
   switch (algorithm){
     case lin:
       if(pos == 0){
