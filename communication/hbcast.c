@@ -4,7 +4,7 @@
 #include "hbcast.h"
 #include "hpnla_bcast.h"
 
-#ifdef BGP_MPIX
+#ifdef MPIX_H
 #include <mpix.h>
 #else 
 #define MPIX_Get_property do{}while(0);
@@ -13,7 +13,7 @@
 
 
 t_bcast_response MPI_HBcast(void *buffer, int count, MPI_Datatype datatype,
-        int root, MPI_Comm comm_world, int num_groups, int rec, int alg, int debug){
+        int root, MPI_Comm comm_world, int num_groups, int rec, int alg, int debug) {
     int pg;
     int rank;
     int size;
@@ -32,6 +32,7 @@ t_bcast_response MPI_HBcast(void *buffer, int count, MPI_Datatype datatype,
 
     MPI_Comm_rank(comm_world, &rank);
     MPI_Comm_size(comm_world, &size);
+    
     if (size == 1) return bcast_response;
 
     /*TODO make num_groups configurable*/
@@ -58,7 +59,7 @@ t_bcast_response MPI_HBcast(void *buffer, int count, MPI_Datatype datatype,
             if (num_groups == -99) {
                 MPI_Comm_size(out_group_comm, &out_size);
                 MPI_Comm_rank(out_group_comm, &out_rank);
-                printf("out_rank=%d, out_size=%d\n", out_rank, out_size);
+                fprintf(stdout, "out_rank=%d, out_size=%d\n", out_rank, out_size);
             }
 
             if (debug == 2)
@@ -71,12 +72,6 @@ t_bcast_response MPI_HBcast(void *buffer, int count, MPI_Datatype datatype,
          * Start broadcast inside groups
          */
         switch (rec) {
-            case 3: // more levels of hierarchy, until size < HBCAST_MIN_PROCS
-                MPI_HBcast(buffer, count, datatype, root_inside, in_group_comm, num_groups, 3, alg, debug);
-                break;
-            case 2: // two levels of hierarchy. Try making hierarchy further inside groups
-                MPI_HBcast(buffer, count, datatype, root_inside, in_group_comm, num_groups, 1, alg, debug);
-                break;
             case 1: // 1 level of hierarchy
                 hpnla_bcast(buffer, count, datatype, root_inside, in_group_comm, alg);
                 break;
@@ -94,9 +89,9 @@ t_bcast_response MPI_HBcast(void *buffer, int count, MPI_Datatype datatype,
         if (in_group_comm != MPI_COMM_NULL)
             MPI_Comm_free(&in_group_comm);
     } else if (size <= HBCAST_MIN_PROCS || validate_input(num_groups, size)) {
-        /*if (debug == 2)
+        if (debug == 2)
            MPIX_Get_property(comm_world, MPIDO_RECT_COMM, &(bcast_response.rec_comm_world));
-         */
+        
         fprintf(stdout, "Using non-hierarchical bcast\n");
         hpnla_bcast(buffer, count, datatype, root, comm_world, alg);
     } else if (!validate_input(num_groups, size)) {

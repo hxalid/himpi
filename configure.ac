@@ -81,7 +81,7 @@ LIBS="$saveLIBS"
 
 # BLAS configuration
 AC_MSG_CHECKING([for BLAS])
-AC_ARG_WITH([blas], [AC_HELP_STRING([--with-blas=NAME], [BLAS (Basic Linear Algebra Subprograms): gsl, atlas, goto, mkl(default: gsl)])])
+AC_ARG_WITH([blas], [AC_HELP_STRING([--with-blas=NAME], [BLAS (Basic Linear Algebra Subprograms): gsl, atlas, goto, essl, mkl(default: gsl)])])
 if test "$with_blas" = ""; then
 	with_blas="gsl"
 fi
@@ -107,6 +107,18 @@ goto)
 	AC_CHECK_LIB([gfortran], [main])
 	AC_CHECK_LIB([goto2], [main], [], [AC_MSG_ERROR([goto2 required but not found])])
 	;;
+essl)
+        AC_ARG_WITH([essl_dir], [AC_HELP_STRING([--with-essl-dir=DIR], [ESSL directory])])
+        if test "$with_essl_dir" != ""; then
+                CPPFLAGS="$CPPFLAGS -I$with_essl_dir/include"
+                LDFLAGS="$LDFLAGS -L$with_essl_dir/lib -L/opt/ibmcmp/xlf/bg/11.1/lib"
+        fi
+        AC_CHECK_LIB([xlomp_ser], [main], [], [AC_MSG_ERROR([xlomp_ser required but not found])])
+        AC_CHECK_LIB([xlf90_r], [main], [], [AC_MSG_ERROR([xlf90_r required but not found])])
+        AC_CHECK_LIB([xlfmath], [main], [], [AC_MSG_ERROR([xlfmath required but not found])])
+        AC_CHECK_LIB([esslbg], [main], [], [AC_MSG_ERROR([esslbg required but not found])])
+        # LIBS="-lmpitrace $LIBS"
+        ;;
 mkl)
 	AC_ARG_WITH([mkl_dir], [AC_HELP_STRING([--with-mkl-dir=DIR], [Math Kernel Library directory])])
 	if test "$with_mkl_dir" != ""; then
