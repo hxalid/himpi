@@ -1,5 +1,5 @@
 AC_PREREQ(2.59)
-AC_INIT([hpnla], [1.0.0], [http://hcl.ucd.ie/project/hpnla])
+AC_INIT([hmpi], [1.0.0], [http://hcl.ucd.ie/project/hmpi])
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_AUX_DIR([build-aux])
@@ -13,7 +13,7 @@ AC_ARG_ENABLE([smpi], [AC_HELP_STRING([--enable-smpi], [Enable the compilation w
 if test "$smpi" = "yes"; then
   CC=smpicc
   CXX=smpicc
-  AC_DEFINE([HDNLA_SMPI], [1], [Smpi enabled])
+  AC_DEFINE([HMPI_SMPI], [1], [Smpi enabled])
 fi
 
 AC_PROG_LIBTOOL
@@ -23,7 +23,7 @@ AC_PROG_INSTALL
 AC_MSG_CHECKING([whether debug is enabled])
 AC_ARG_ENABLE([debug], [AC_HELP_STRING([--enable-debug], [Enable debug (default: disabled)])], [debug="yes"], [debug="no"])
 if test "$debug" = "yes"; then
-	AC_DEFINE([HDNLA_DEBUG], [1], [Debug enabled])
+	AC_DEFINE([HMPI_DEBUG], [1], [Debug enabled])
 	CFLAGS="-g -O0 -Wall"
 	CXXFLAGS="-g -O0 -Wall -Wno-deprecated"
 fi
@@ -78,6 +78,10 @@ AC_CHECK_FUNCS([pthread_attr_setaffinity_np],
   [AC_DEFINE([USE_SCHED_AFFINITY],1,[Use affinity interface])])
 CFLAGS="$saveCFLAGS"
 LIBS="$saveLIBS"
+
+#BG/P configuration
+AC_CHECK_HEADER(mpix.h, [AC_DEFINE([HAVE_MPIX_H], [1], [Use MPI extensions for BG/P])])
+
 
 # BLAS configuration
 AC_MSG_CHECKING([for BLAS])
@@ -140,6 +144,7 @@ esac
 AC_CONFIG_FILES([
 	Makefile
         hpnla/Makefile
+	hmpi/Makefile
 	tools/Makefile
 	tests/Makefile
 	cblas_wrappers/Makefile

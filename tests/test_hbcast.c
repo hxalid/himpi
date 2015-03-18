@@ -4,11 +4,13 @@
 #include <getopt.h>
 #include <mpi.h>
 
+#include "config.h"
 #include "utils.h"
 #include "hbcast.h"
 
-//#include <mpix.h>
-
+#ifdef HAVE_MPIX_H
+#include <mpix.h>
+#endif
 
 
 int main(int argc, char* argv[]) {
@@ -19,6 +21,7 @@ int main(int argc, char* argv[]) {
     int reps = 30;
     int debug = 0;
     int use_any_root = 0;
+    int rec_world = -1;
     int pg = 1;
     int groups = 1;
     int my_group = 0;
@@ -132,10 +135,10 @@ int main(int argc, char* argv[]) {
         fprintf(stdout, "root  p   g    msg     time     rec   reps   rec_in  rec_out  rec_world \n");
     }
 
-    int rec_world = -1;
-    /*if (debug == 2)
+#if HAVE_MPIX_H
+    if (debug == 2)
        MPIX_Get_property(comm_world, MPIDO_RECT_COMM, &rec_world);
-     */
+#endif
 
     for (msg_size = message_min; msg_size < message_max + 1; msg_size *= msg_factor) {
         array = create_rand_elms(msg_size);

@@ -40,6 +40,7 @@ gemm_block_mpi_SOURCES = \
   Summa.h \
   Matrix_init.c \
   Matrix_init.h
+  
 nodist_EXTRA_gemm_block_mpi_SOURCES = dummy.cpp
 gemm_block_mpi_LDADD = \
   $(top_builddir)/cblas_wrappers/libcblas_wrappers.la \
@@ -55,6 +56,7 @@ MM_mpi_SOURCES = \
   Matrix_init.h \
   2.5D_MM.c \
   2.5D_MM.h
+  
 nodist_EXTRA_MM_mpi_SOURCES = dummy.cpp
 MM_mpi_LDADD = \
   $(top_builddir)/cblas_wrappers/libcblas_wrappers.la \
@@ -70,6 +72,7 @@ MM_recursive_SOURCES = \
   Matrix_init.h \
   Recursive.c \
   Recursive.h
+  
 nodist_EXTRA_MM_recursive_SOURCES = dummy.cpp
 MM_recursive_LDADD = \
   $(top_builddir)/cblas_wrappers/libcblas_wrappers.la \
