@@ -4,10 +4,12 @@ include_HEADERS = \
         hpnla_debug.h \
         hpnla_conf.h \
         hpnla_bind.h \
-        hpnla_timer.h
+        hpnla_timer.h \
+        utils.h
 
 noinst_LTLIBRARIES = libhpnla_tools.la
 libhpnla_tools_la_SOURCES = \
         hpnla_conf.c \
         hpnla_bind.c \
-        hpnla_timer.c
+        hpnla_timer.c \
+        utils.c 

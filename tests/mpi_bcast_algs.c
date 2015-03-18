@@ -1,4 +1,4 @@
-#include "mpi_bcast_algs.h"
+#include "../tests/mpi_bcast_algs.h"
 
 
 

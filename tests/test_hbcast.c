@@ -5,8 +5,9 @@
 #include <mpi.h>
 
 #include "config.h"
-#include "utils.h"
-#include "hbcast.h"
+
+#include "../tests/hbcast.h"
+#include "../tests/utils.h"
 
 #ifdef HAVE_MPIX_H
 #include <mpix.h>

@@ -1,5 +1,7 @@
-#include "hbcast.h"
-#include "utils.h"
+#include "../utils/utils.h"
+#include "../tests/hbcast.h"
+
+#include "../tests/utils.h"
 
 
 /*
