@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "hbcast.h"
+#include "hmpi.h"
 #include "hpnla_bcast.h"
 
 #ifdef MPIX_H
@@ -12,7 +12,7 @@
 #endif
 
 
-t_bcast_response MPI_HBcast(void *buffer, int count, MPI_Datatype datatype,
+int MPI_HBcast(void *buffer, int count, MPI_Datatype datatype,
         int root, MPI_Comm comm_world, int num_groups, int rec, int alg, int debug) {
     int pg;
     int rank;
@@ -33,7 +33,7 @@ t_bcast_response MPI_HBcast(void *buffer, int count, MPI_Datatype datatype,
     MPI_Comm_rank(comm_world, &rank);
     MPI_Comm_size(comm_world, &size);
     
-    if (size == 1) return bcast_response;
+    if (size == 1) return MPI_SUCCESS;
 
     /*TODO make num_groups configurable*/
     if (size > HBCAST_MIN_PROCS && validate_input(num_groups, size)) {
@@ -45,8 +45,9 @@ t_bcast_response MPI_HBcast(void *buffer, int count, MPI_Datatype datatype,
         //  MPI_Comm_split(comm_world, (rank - my_group * pg == stride) ? 0 : MPI_UNDEFINED, rank, &out_group_comm);
         MPI_Comm_split(comm_world, my_group, rank, &in_group_comm);
 
-        if (debug == 2)
+     /*   if (debug == 2)
             MPIX_Get_property(in_group_comm, MPIDO_RECT_COMM, &(bcast_response.rec_in_group_comm));
+     */
 
         /*
          * Start broadcast between groups
@@ -56,14 +57,11 @@ t_bcast_response MPI_HBcast(void *buffer, int count, MPI_Datatype datatype,
             int out_rank = -1;
             root_outside = root; //  root / pg; 
             hpnla_bcast(buffer, count, datatype, root_outside, out_group_comm, alg);
-            if (num_groups == -99) {
-                MPI_Comm_size(out_group_comm, &out_size);
-                MPI_Comm_rank(out_group_comm, &out_rank);
-                fprintf(stdout, "out_rank=%d, out_size=%d\n", out_rank, out_size);
-            }
 
+            /*
             if (debug == 2)
                 MPIX_Get_property(out_group_comm, MPIDO_RECT_COMM, &(bcast_response.rec_out_group_comm));
+            */
 
         }
 
@@ -89,18 +87,19 @@ t_bcast_response MPI_HBcast(void *buffer, int count, MPI_Datatype datatype,
         if (in_group_comm != MPI_COMM_NULL)
             MPI_Comm_free(&in_group_comm);
     } else if (size <= HBCAST_MIN_PROCS || validate_input(num_groups, size)) {
-        if (debug == 2)
+
+    	/*if (debug == 2)
            MPIX_Get_property(comm_world, MPIDO_RECT_COMM, &(bcast_response.rec_comm_world));
+        */
         
         fprintf(stdout, "Using non-hierarchical bcast\n");
         hpnla_bcast(buffer, count, datatype, root, comm_world, alg);
     } else if (!validate_input(num_groups, size)) {
         /*TODO*/
         fprintf(stdout, "Wrong number of groups\n");
-        bcast_response.err_flag = ERR_GROUPS;
     }
 
-    return bcast_response;
+    return MPI_SUCCESS;
         
 }
 
