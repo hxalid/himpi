@@ -6,8 +6,8 @@
 
 #include "config.h"
 
-#include "../tests/hbcast.h"
-#include "../tests/utils.h"
+#include "hbcast_old.h"
+#include "../tools/utils.h"
 
 #ifdef HAVE_MPIX_H
 #include <mpix.h>
