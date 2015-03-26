@@ -21,12 +21,6 @@ int MPI_HBcast(void *buffer, int count, MPI_Datatype datatype,
     int root_inside;
     int root_outside;
     int my_group;
-    t_bcast_response bcast_response = {
-        .rec_out_group_comm = -1,
-        .rec_in_group_comm = -1,
-        .rec_comm_world = -1,
-        .err_flag = 0
-    };
 
     MPI_Comm in_group_comm, out_group_comm;
 
