@@ -8,6 +8,8 @@
 #ifndef HMPI_HMPI_H_
 #define HMPI_HMPI_H_
 
+#include <mpi.h>
+
 
 #define MAX_INT_SIZE 50
 #define TEN_KB 10240
