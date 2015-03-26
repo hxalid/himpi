@@ -1,4 +1,4 @@
-SUBDIRS = tools tests communication cblas_wrappers hpnla
+SUBDIRS = tools tests communication cblas_wrappers hpnla hmpi
 
 include aminclude.am
 EXTRA_DIST = \

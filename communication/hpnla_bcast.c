@@ -1,6 +1,8 @@
 #include "hpnla_bcast.h"
 #include "tools/hpnla_debug.h"
+
 #include <stdio.h>
+#include <mpi.h>
 
 
 #define Bcast_TAG 904920477 

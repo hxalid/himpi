@@ -9,6 +9,7 @@
 #define HMPI_HMPI_H_
 
 #include <mpi.h>
+#include <stdio.h>
 
 
 #define MAX_INT_SIZE 50

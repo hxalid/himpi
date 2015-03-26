@@ -41,13 +41,11 @@ int MPI_HAllreduce(void *snd_buffer, void* rcv_buffer, int count,
 		//Start broadcast inside groups
 		switch (rec) {
 		case 1: // 1 level of hierarchy
-			MPI_Allreduce(snd_buffer, reduce_in, count, datatype, op,
-					in_group_comm, alg);
+			MPI_Allreduce(snd_buffer, reduce_in, count, datatype, op, in_group_comm);
 			break;
 		case -1:
 			// Just to see if broadcast inside groups is better than that of with MPI_COMM_WORLD
-			MPI_Allreduce(snd_buffer, rcv_buffer, count, datatype, op,
-					in_group_comm, alg);
+			MPI_Allreduce(snd_buffer, rcv_buffer, count, datatype, op, in_group_comm);
 			break;
 		default: // e.g. -2
 			// Don't broadcast inside groups. Just to see if broadcast between groups is better than that of with MPI_COMM_WORLD
@@ -59,9 +57,7 @@ int MPI_HAllreduce(void *snd_buffer, void* rcv_buffer, int count,
 			int out_size = 0;
 			int out_rank = -1;
 
-			MPI_Allreduce((rec == 1) ? reduce_in : snd_buffer, rcv_buffer,
-					count, datatype, op, out_group_comm, alg);
-
+			MPI_Allreduce((rec == 1) ? reduce_in : snd_buffer, rcv_buffer, count, datatype, op, out_group_comm);
 		}
 
 		// Now broadcast sub-sums inside groups. We need it if we use communicators between the groups leaders
@@ -78,10 +74,9 @@ int MPI_HAllreduce(void *snd_buffer, void* rcv_buffer, int count,
 			MPI_Comm_free(&out_group_comm);
 		if (in_group_comm != MPI_COMM_NULL)
 			MPI_Comm_free(&in_group_comm);
-	} else if (size <= HREDUCE_MIN_PROCS
-			|| (num_groups == 1 || num_groups == size)) {
+	} else if (size <= HREDUCE_MIN_PROCS || (num_groups == 1 || num_groups == size)) {
 		//  fprintf(stdout, "Using non-hierarchical reduce: [p=%d, g=%d]\n", size, num_groups);
-		MPI_Allreduce(snd_buffer, rcv_buffer, count, datatype, op, comm_world, alg);
+		MPI_Allreduce(snd_buffer, rcv_buffer, count, datatype, op, comm_world);
 	} else {
 		/*TODO*/
 		// fprintf(stdout, "Wrong number of groups: [p=%d, g=%d]\n", size, num_groups);

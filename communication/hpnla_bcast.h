@@ -1,8 +1,6 @@
 #ifndef HPNLA_BCAST_H_
 #define HPNLA_BCAST_H_
 
-#include <mpi.h>
-
 typedef enum hpnla_bcast_algo {
   lin,
   binary,
