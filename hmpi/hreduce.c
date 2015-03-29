@@ -23,8 +23,6 @@ int MPI_HReduce(void *snd_buffer, void* rcv_buffer, int count, MPI_Datatype data
     int root_outside;
     int my_group;
     double *reduce_out;
-
-
     MPI_Comm in_group_comm, out_group_comm;
 
     MPI_Comm_rank(comm_world, &rank);

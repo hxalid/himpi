@@ -11,7 +11,7 @@
 #include "Summa.h"
 #include "tools/hpnla_timer.h"
 #include <stdlib.h>
-#ifdef HDNLA_SMPI
+#ifdef HMPI_SMPI
 #include <smpi.h>
 #else
 #define SMPI_SHARED_FREE free

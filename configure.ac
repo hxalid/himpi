@@ -155,7 +155,7 @@ AC_CONFIG_FILES([
 
 
 DX_PS_FEATURE([OFF])
-DX_INIT_DOXYGEN(hpnla)
+DX_INIT_DOXYGEN(hmpi)
 define([svn_revision], esyscmd([sh -c "svnversion -n"]))dnl
 DX_ENV_APPEND(SVN_REVISION, [svn_revision])
 
