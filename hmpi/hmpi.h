@@ -11,8 +11,6 @@
 #include <mpi.h>
 #include <stdio.h>
 
-
-#define MAX_INT_SIZE 50
 #define TEN_KB 10240
 #define Bcast_TAG 904920477
 #define ERR_GROUPS -99
@@ -25,7 +23,7 @@
 int validate_input(int num_groups, int num_procs);
 
 int MPI_HBcast(void *buffer, int count, MPI_Datatype datatype,
-        int root, MPI_Comm comm_world, int num_groups, int rec, int alg, int debug);
+        int root, MPI_Comm comm_world, int rec, int alg);
 
 
 int MPI_HReduce(void *snd_buffer, void* rcv_buffer, int count, MPI_Datatype datatype, MPI_Op op,

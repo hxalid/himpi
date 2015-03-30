@@ -12,7 +12,8 @@ char *create_rand_elms(int num_elements) {
 	assert(rand_nums != NULL);
 	int i;
 	for (i = 0; i < num_elements; i++) {
-		rand_nums[i] = (rand() / (int) MAX_INT_SIZE);
+		//TODO
+		rand_nums[i] = (rand() / 1024);
 	}
 	return rand_nums;
 }
@@ -22,7 +23,7 @@ double hdnla_conf_int(double cl, int reps, double* T) {
 			/ sqrt(reps);
 }
 
-hmpi_conf* hmpi_get_conf_all(char* filename, int* size) {
+hmpi_conf* hmpi_get_conf_all(const char* filename, int* num_lines) {
 	if (filename == NULL) {
 		fprintf(stderr, "Error filename null %s\n", __func__);
 		MPI_Abort(MPI_COMM_WORLD, 200);
@@ -30,8 +31,7 @@ hmpi_conf* hmpi_get_conf_all(char* filename, int* size) {
 	FILE* stream;
 	stream = fopen(filename, "r");
 	if (stream == NULL) {
-		debug_print(0, (size_t) 0, (size_t) 0,
-				"Try to open the configuration file %s\n", filename);
+		printf("Try to open the configuration file %s\n", filename);
 		perror("fopen");
 		MPI_Abort(MPI_COMM_WORLD, 201);
 	}
@@ -49,9 +49,9 @@ hmpi_conf* hmpi_get_conf_all(char* filename, int* size) {
 
 		confs = realloc(confs, sizeof(hmpi_conf) * (n + 1));
 		int pos = 0;
-		int err = sscanf(line, "%s %d %s %s %s %n", confs[n].num_procs,
-				&confs[n].num_groups, confs[n].num_levels, &pos);
-		if (err < 4) {
+		int err = sscanf(line, "%d %d %d %n", &confs[n].num_procs,
+				&confs[n].num_groups, &confs[n].num_levels, &pos);
+		if (err < 3) {
 			fprintf(stderr, "Error reading line%d: \"%s\" err:%d in %s\n", n,
 					line, err, __func__);
 			MPI_Abort(MPI_COMM_WORLD, 204);
@@ -61,9 +61,38 @@ hmpi_conf* hmpi_get_conf_all(char* filename, int* size) {
 	}
 
 	free(line);
-	*size = n;
+	*num_lines = n;
 	return confs;
 }
+
+
+
+int hmpi_get_num_groups(MPI_Comm comm, const char* filename) {
+	//get number of groups per process.
+	int num_lines;
+	hmpi_conf* confs = hmpi_get_conf_all(filename, &num_lines);
+	int num_procs;
+	MPI_Comm_size(comm, &num_procs);
+
+	int i;
+	int num_groups;
+
+	//TODO
+	if (confs == NULL)
+		num_groups = 1;
+
+	for(i = 0; i < num_lines; i++){
+		if (confs[i].num_procs == num_procs) {
+			num_groups = confs[i].num_groups;
+			break;
+		} else {
+			num_groups = 1;
+		}
+	}
+
+	return num_groups;
+}
+
 
 
 

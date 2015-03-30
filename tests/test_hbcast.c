@@ -6,7 +6,8 @@
 
 #include "config.h"
 
-#include "hbcast_old.h"
+//#include "hbcast_old.h"
+#include "../hmpi/hmpi.h"
 #include "../tools/utils.h"
 
 #ifdef HAVE_MPIX_H
@@ -37,8 +38,6 @@ int main(int argc, char* argv[]) {
     double elapsed_time, max_time; /* time spent for broadcast */
     int bcast_linear_segment_size = 1024; //TODO
 
-
-    t_bcast_response bcast_response;
 
     int p_name_len;
     char p_name[MPI_MAX_PROCESSOR_NAME];
@@ -98,7 +97,7 @@ int main(int argc, char* argv[]) {
             case 'h':
                 if (rank == 0)
                     fprintf(stdout,
-                        "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n",
+                        "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n",
                         "-m minimum message size",
                         "-M maximum message size",
                         "-f message_factor",
@@ -157,7 +156,7 @@ int main(int argc, char* argv[]) {
         MPI_Reduce(&elapsed_time, &max_time, 1, MPI_DOUBLE, MPI_MAX, root, MPI_COMM_WORLD);
 
         if (rank == root) {
-            fprintf(stdout, "%d %d %d %f %f %d %d %d %d %d\n",
+            fprintf(stdout, "MPI_Bcast: %d %d %d %f %f %d %d %d %d %d\n",
                     root, num_proc, 1, msg_size * sizeof (char) / 1024., max_time, rec, reps, -1, -1, rec_world);
         }
 
@@ -167,45 +166,36 @@ int main(int argc, char* argv[]) {
 
     if (rec != 0) {
         for (msg_size = message_min; msg_size < message_max + 1; msg_size *= msg_factor) {
-            groups = 2;
-            while (groups < g_max) {
-                if (num_proc % groups == 0) {
-                    array = create_rand_elms(msg_size);
-                    MPI_Barrier(MPI_COMM_WORLD);
 
-                    elapsed_time = 0.;
-                    for (i = 0; i < reps; i++) {
-                        MPI_Barrier(MPI_COMM_WORLD);
-                        start_time = MPI_Wtime();
-                        bcast_response = MPI_HBcast(array, msg_size, MPI_CHAR, root, MPI_COMM_WORLD, groups, rec, alg, debug);
-                        if (bcast_response.err_flag != ERR_GROUPS)
-                            elapsed_time += (MPI_Wtime() - start_time);
-                    }
+			array = create_rand_elms(msg_size);
+			MPI_Barrier(MPI_COMM_WORLD);
 
-                    if (bcast_response.err_flag != ERR_GROUPS) {
-                        elapsed_time /= reps;
-                        MPI_Barrier(MPI_COMM_WORLD);
-                        MPI_Reduce(&elapsed_time, &max_time, 1, MPI_DOUBLE, MPI_MAX, root, MPI_COMM_WORLD);
-                    }
+			elapsed_time = 0.;
+			for (i = 0; i < reps; i++) {
+				MPI_Barrier(MPI_COMM_WORLD);
+				start_time = MPI_Wtime();
+				MPI_HBcast(array, msg_size, MPI_CHAR, root, MPI_COMM_WORLD, rec, alg);
+				elapsed_time += (MPI_Wtime() - start_time);
+			}
 
-                    if (rank == root && bcast_response.err_flag != ERR_GROUPS) {
-                        fprintf(stdout, "%d %d %d %f %f %d %d %d %d %d\n",
-                                root,
-                                num_proc, groups,
-                                msg_size * sizeof (char) / 1024.,
-                                max_time,
-                                rec,
-                                reps,
-                                bcast_response.rec_in_group_comm,
-                                bcast_response.rec_out_group_comm,
-                                bcast_response.rec_comm_world);
-                    }
+			elapsed_time /= reps;
+			MPI_Barrier(MPI_COMM_WORLD);
+			MPI_Reduce(&elapsed_time, &max_time, 1, MPI_DOUBLE, MPI_MAX, root, MPI_COMM_WORLD);
 
-                    free(array);
-                    MPI_Barrier(MPI_COMM_WORLD);
-                }
-                groups++;
-            }
+			if (rank == root) {
+				fprintf(stdout, "MPI_HBcast: %d %d %d %f %f %d %d %d\n",
+						root,
+						num_proc, groups,
+						msg_size * sizeof (char) / 1024.,
+						max_time,
+						rec,
+						reps,
+						rec_world);
+			}
+
+			free(array);
+			MPI_Barrier(MPI_COMM_WORLD);
+
         }
     }
 
@@ -219,7 +209,7 @@ int main(int argc, char* argv[]) {
 
             groups = 2;
             while (groups < g_max) {
-                if (validate_input(groups, num_proc) && num_proc % groups == 0) {
+                if (validate_groups(groups, num_proc) && num_proc % groups == 0) {
                     pg = num_proc / groups;
                     my_group = rank / pg;
 
