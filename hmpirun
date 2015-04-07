@@ -1,0 +1,27 @@
+#!/bin/bash
+
+HMPI_VERSION="1.0"
+
+DEFAULT_HMPI_GROUPS="1"
+
+
+usage() {
+   cat << EOF
+Usage: $0 [OPTIONS] -hostfile <hostfile> program [program-options]
+Options:
+	-np <numprocs>       # use that amount of processes from the hostfile.
+                             # By default, all processes of the hostfile are used.
+
+EOF
+}
+
+if [ $# -eq 0 ]
+then
+   usage
+   exit
+fi
+
+NUMPROCS="$2"
+APPLICATION="$3"
+
+mpirun -n $NUMPROCS $APPLICATION
