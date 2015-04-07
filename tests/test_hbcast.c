@@ -185,7 +185,8 @@ int main(int argc, char* argv[]) {
 			if (rank == root) {
 				fprintf(stdout, "MPI_HBcast: %d %d %d %f %f %d %d %d\n",
 						root,
-						num_proc, groups,
+						num_proc,
+						hmpi_get_comm_conf(MPI_COMM_WORLD, "fayil.conf")->num_groups,
 						msg_size * sizeof (char) / 1024.,
 						max_time,
 						rec,
