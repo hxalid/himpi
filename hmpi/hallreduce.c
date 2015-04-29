@@ -7,7 +7,7 @@
 
 #include "hmpi.h"
 
-int MPI_HAllreduce(void *snd_buffer, void* rcv_buffer, int count,
+int HMPI_Allreduce(void *snd_buffer, void* rcv_buffer, int count,
 		MPI_Datatype datatype, MPI_Op op, MPI_Comm comm_world, int num_groups,
 		int rec, int alg, int debug, int myrank) {
 	int pg;

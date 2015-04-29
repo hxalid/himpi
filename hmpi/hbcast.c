@@ -15,7 +15,7 @@
 
 const char *HMPI_CONF_FILE_NAME = "fayil.conf";
 
-int MPI_HBcast(void *buffer, int count, MPI_Datatype datatype,
+int HMPI_Bcast(void *buffer, int count, MPI_Datatype datatype,
         int root, MPI_Comm comm_world, int rec, int alg) {
     int pg;
     int rank;

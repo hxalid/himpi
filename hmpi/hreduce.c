@@ -12,7 +12,7 @@
 /*
  * TODO:  It works only for root=0. Fix it to work with any possible root.
  */
-int MPI_HReduce(void *snd_buffer, void* rcv_buffer, int count, MPI_Datatype datatype, MPI_Op op,
+int HMPI_Reduce(void *snd_buffer, void* rcv_buffer, int count, MPI_Datatype datatype, MPI_Op op,
         int root, MPI_Comm comm_world, int num_groups, int rec, int alg, int debug, int myrank) {
 	int err;
     int pg;

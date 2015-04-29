@@ -22,14 +22,14 @@
 
 int validate_input(int num_groups, int num_procs);
 
-int MPI_HBcast(void *buffer, int count, MPI_Datatype datatype,
+int HMPI_Bcast(void *buffer, int count, MPI_Datatype datatype,
         int root, MPI_Comm comm_world, int rec, int alg);
 
 
-int MPI_HReduce(void *snd_buffer, void* rcv_buffer, int count, MPI_Datatype datatype, MPI_Op op,
+int HMPI_Reduce(void *snd_buffer, void* rcv_buffer, int count, MPI_Datatype datatype, MPI_Op op,
         int root, MPI_Comm comm_world, int num_groups, int rec, int alg, int debug, int myrank);
 
-
+int HMPI_Init( int *argc, char ***argv );
 
 
 #endif /* HMPI_HMPI_H_ */

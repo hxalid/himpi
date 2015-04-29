@@ -9,7 +9,7 @@
 
 static const char HMPI_FUNC_NAME[] = "MPI_HGather";
 
-int MPI_HGather(void *sendbuf, int sendcnt, MPI_Datatype sendtype,
+int HMPI_Gather(void *sendbuf, int sendcnt, MPI_Datatype sendtype,
 		void *recvbuf, int recvcnt, MPI_Datatype recvtype, int root,
 		MPI_Comm comm, int num_groups) {
 	int res = MPI_SUCCESS;

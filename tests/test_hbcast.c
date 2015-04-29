@@ -45,7 +45,8 @@ int main(int argc, char* argv[]) {
     srand(time(NULL));
 
     /* Start up MPI */
-    MPI_Init(&argc, &argv);
+   // MPI_Init(&argc, &argv);
+    HMPI_Init(&argc, &argv);
 
     /* Find out processor name */
     MPI_Get_processor_name(p_name, &p_name_len);
@@ -174,7 +175,7 @@ int main(int argc, char* argv[]) {
 			for (i = 0; i < reps; i++) {
 				MPI_Barrier(MPI_COMM_WORLD);
 				start_time = MPI_Wtime();
-				MPI_HBcast(array, msg_size, MPI_CHAR, root, MPI_COMM_WORLD, rec, alg);
+				HMPI_Bcast(array, msg_size, MPI_CHAR, root, MPI_COMM_WORLD, rec, alg);
 				elapsed_time += (MPI_Wtime() - start_time);
 			}
 
@@ -183,10 +184,10 @@ int main(int argc, char* argv[]) {
 			MPI_Reduce(&elapsed_time, &max_time, 1, MPI_DOUBLE, MPI_MAX, root, MPI_COMM_WORLD);
 
 			if (rank == root) {
-				fprintf(stdout, "MPI_HBcast: %d %d %d %f %f %d %d %d\n",
+				fprintf(stdout, "HMPI_Bcast: %d %d %d %f %f %d %d %d\n",
 						root,
 						num_proc,
-						hmpi_get_comm_conf(MPI_COMM_WORLD, "fayil.conf")->num_groups,
+						hmpi_get_num_groups(MPI_COMM_WORLD, "fayil.conf"),
 						msg_size * sizeof (char) / 1024.,
 						max_time,
 						rec,
@@ -260,5 +261,5 @@ int main(int argc, char* argv[]) {
 
     MPI_Barrier(MPI_COMM_WORLD);
     /* Shut down MPI */
-    MPI_Finalize();
+    HMPI_Finalize();
 } /* main */
