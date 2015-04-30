@@ -29,6 +29,15 @@ if test "$debug" = "yes"; then
 fi
 AC_MSG_RESULT([$debug])
 
+
+AC_MSG_CHECKING([whether use group config file])
+AC_ARG_ENABLE([groupconfig], [AC_HELP_STRING([--enable-groupconfig], [Enable enable-groupconfig (default: disabled)])], [groupconfig="yes"], [groupconfig="no"])
+if test "$groupconfig" = "yes"; then
+	AC_DEFINE([HMPI_GROUP_CONFIG], [1], [Group config enabled])
+fi
+AC_MSG_RESULT([$groupconfig])
+
+
 AC_OPENMP
 CFLAGS="$CFLAGS $OPENMP_CFLAGS"
 CXXFLAGS="$CXXFLAGS $OPENMP_CXXFLAGS"

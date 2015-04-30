@@ -11,6 +11,8 @@
 #include <mpi.h>
 #include <stdio.h>
 
+#include "config.h"
+
 #define TEN_KB 10240
 #define Bcast_TAG 904920477
 #define ERR_GROUPS -99
