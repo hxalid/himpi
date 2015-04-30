@@ -13,10 +13,11 @@
 #endif
 
 
-const char *HMPI_CONF_FILE_NAME = "fayil.conf";
+//const char *HMPI_CONF_FILE_NAME = "fayil.conf";
+
 
 int HMPI_Bcast(void *buffer, int count, MPI_Datatype datatype,
-        int root, MPI_Comm comm_world, int rec, int alg) {
+        int root, MPI_Comm comm, int rec, int alg) {
     int pg;
     int rank;
     int comm_size;
@@ -27,13 +28,13 @@ int HMPI_Bcast(void *buffer, int count, MPI_Datatype datatype,
 
     MPI_Comm in_group_comm, out_group_comm;
 
-    MPI_Comm_rank(comm_world, &rank);
-    MPI_Comm_size(comm_world, &comm_size);
+    MPI_Comm_rank(comm, &rank);
+    MPI_Comm_size(comm, &comm_size);
     
     if (comm_size == 1) return MPI_SUCCESS;
 
 
-    int num_groups = hmpi_get_num_groups(comm_world, HMPI_CONF_FILE_NAME);
+   // int num_groups = hmpi_get_num_groups(comm, HMPI_CONF_FILE_NAME);
 
     /*TODO make num_groups configurable*/
     if (comm_size > HBCAST_MIN_PROCS && validate_groups(num_groups, comm_size)) {
@@ -41,7 +42,7 @@ int HMPI_Bcast(void *buffer, int count, MPI_Datatype datatype,
         my_group = rank / pg;
         stride = root / pg;
 
-        MPI_Comm_split(comm_world, (rank - my_group * pg == 0) ? 0 : MPI_UNDEFINED, rank, &out_group_comm);
+        MPI_Comm_split(comm, (rank - my_group * pg == 0) ? 0 : MPI_UNDEFINED, rank, &out_group_comm);
         //  MPI_Comm_split(comm_world, (rank - my_group * pg == stride) ? 0 : MPI_UNDEFINED, rank, &out_group_comm);
 
 #if(2 == DEBUG)
@@ -66,7 +67,7 @@ int HMPI_Bcast(void *buffer, int count, MPI_Datatype datatype,
         /*
          * Start broadcast inside groups
          */
-        MPI_Comm_split(comm_world, my_group, rank, &in_group_comm);
+        MPI_Comm_split(comm, my_group, rank, &in_group_comm);
         root_inside = root; // root_inside = stride;
         switch (rec) {
             case 1: // 1 level of hierarchy
@@ -88,11 +89,11 @@ int HMPI_Bcast(void *buffer, int count, MPI_Datatype datatype,
     } else if (comm_size <= HBCAST_MIN_PROCS || validate_groups(num_groups, comm_size)) {
 
 #if(2 == DEBUG)
-    	MPIX_Get_property(comm_world, MPIDO_RECT_COMM, &(bcast_response.rec_comm_world));
+    	MPIX_Get_property(comm, MPIDO_RECT_COMM, &(bcast_response.rec_comm_world));
 #endif
         
         fprintf(stdout, "Using non-hierarchical bcast\n");
-        hpnla_bcast(buffer, count, datatype, root, comm_world, alg);
+        hpnla_bcast(buffer, count, datatype, root, comm, alg);
     } else if (!validate_groups(num_groups, comm_size)) {
         /*TODO*/
         fprintf(stdout, "Wrong number of groups\n");

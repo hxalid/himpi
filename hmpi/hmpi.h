@@ -20,6 +20,8 @@
 #define HREDUCE_MIN_PROCS 4
 
 
+extern int num_groups;
+
 int validate_input(int num_groups, int num_procs);
 
 int HMPI_Bcast(void *buffer, int count, MPI_Datatype datatype,
