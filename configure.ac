@@ -31,11 +31,16 @@ AC_MSG_RESULT([$debug])
 
 
 AC_MSG_CHECKING([whether use group config file])
-AC_ARG_ENABLE([groupconfig], [AC_HELP_STRING([--enable-groupconfig], [Enable enable-groupconfig (default: disabled)])], [groupconfig="yes"], [groupconfig="no"])
-if test "$groupconfig" = "yes"; then
-	AC_DEFINE([HMPI_GROUP_CONFIG], [1], [Group config enabled])
+AC_ARG_WITH([group_conf], [AC_HELP_STRING([--with-group-conf=FILE], [Group config file])])
+if test "$with_group_conf" != ""; then
+    if test -f "$with_group_conf"
+	then
+		AC_DEFINE_UNQUOTED([HMPI_GROUP_CONFIG], ["$with_group_conf"], [Group config enabled])
+	else
+		AC_MSG_ERROR([The specified group config file does not exist.])
+	fi
 fi
-AC_MSG_RESULT([$groupconfig])
+
 
 
 AC_OPENMP

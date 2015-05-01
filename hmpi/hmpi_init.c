@@ -23,6 +23,7 @@ int HMPI_Init( int *argc, char ***argv ) {
 
 
 #ifdef HMPI_GROUP_CONFIG
+	printf("HMPI_GROUP_CONFIG=%s\n", HMPI_GROUP_CONFIG);
 	num_groups = hmpi_get_num_groups(MPI_COMM_WORLD, HMPI_CONF_FILE_NAME);
 #else
 	num_groups = 0;
