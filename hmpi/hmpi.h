@@ -22,7 +22,8 @@
 #define HREDUCE_MIN_PROCS 4
 
 
-extern int num_groups;
+//extern int num_groups;
+extern const char *HMPI_CONF_FILE_NAME;
 
 int validate_input(int num_groups, int num_procs);
 

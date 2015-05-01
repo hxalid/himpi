@@ -33,8 +33,7 @@ int HMPI_Bcast(void *buffer, int count, MPI_Datatype datatype,
     
     if (comm_size == 1) return MPI_SUCCESS;
 
-
-   // int num_groups = hmpi_get_num_groups(comm, HMPI_CONF_FILE_NAME);
+    int num_groups = hmpi_get_num_groups(comm, HMPI_CONF_FILE_NAME);
 
     /*TODO make num_groups configurable*/
     if (comm_size > HBCAST_MIN_PROCS && validate_groups(num_groups, comm_size)) {

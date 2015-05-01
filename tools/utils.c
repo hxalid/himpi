@@ -60,6 +60,7 @@ hmpi_conf* hmpi_get_conf_all(const char* filename, int* num_lines) {
 		n++;
 	}
 
+	fclose(stream);
 	free(line);
 	*num_lines = n;
 	return confs;

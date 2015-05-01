@@ -7,12 +7,13 @@
 
 #include "hmpi.h"
 
-const char *HMPI_CONF_FILE_NAME = "fayil.conf";
 
 /*
  * num_groups is an extern variable defined in hmpi.h
  */
-int num_groups;
+//int num_groups;
+
+const char *HMPI_CONF_FILE_NAME;
 
 int HMPI_Init( int *argc, char ***argv ) {
 	int rc = MPI_Init(argc, argv);
@@ -23,13 +24,12 @@ int HMPI_Init( int *argc, char ***argv ) {
 
 
 #ifdef HMPI_GROUP_CONFIG
-	printf("HMPI_GROUP_CONFIG=%s\n", HMPI_GROUP_CONFIG);
-	num_groups = hmpi_get_num_groups(MPI_COMM_WORLD, HMPI_CONF_FILE_NAME);
+	HMPI_CONF_FILE_NAME = HMPI_GROUP_CONFIG;
+	//num_groups = hmpi_get_num_groups(MPI_COMM_WORLD, HMPI_CONF_FILE_NAME);
 #else
-	num_groups = 0;
+	//num_groups = 0;
+	fprintf(stdout, "No group config file specified, g=sqrt(p) will be used\n");
 #endif
-
-	printf("num_groups=%d\n", num_groups);
 
 	//Find out optimal number of groups here
 
