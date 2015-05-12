@@ -158,7 +158,7 @@ esac
 
 AC_CONFIG_FILES([
 	Makefile
-    hpnla/Makefile
+        hpnla/Makefile
 	hmpi/Makefile
 	cblas_wrappers/Makefile
 	communication/Makefile
@@ -166,7 +166,7 @@ AC_CONFIG_FILES([
 	tests/Makefile
 ])
 
-
+AC_CONFIG_SUBDIRS([MPIBlib])
 
 DX_PS_FEATURE([OFF])
 DX_INIT_DOXYGEN(hmpi)

@@ -1,0 +1,65 @@
+Installation
+============
+
+Required software:
+1. any C/C++ and MPI (MPICH-1 does not support shared libraries)
+2. GSL (GNU Scientific Library)
+3. Boost (The Boost C++ libraries: Graph)
+
+Optional software:
+1. Gnuplot (An Interactive Plotting Program) - for performance diagrams
+2. Graphviz (Graph Visualization Software: dot) - for tree visualization
+
+GSL
+If GSL is installed in a non-default directory
+$ export LD_LIBRARY_PATH=DIR/lib:$LD_LIBRARY_PATH
+
+Boost
+1. Boost should be configured with at least the Graph library
+   (default: all)
+$ ./configure --prefix=DIR --with-libraries=graph
+2. Default installation:
+ - DIR/include/boost_version/boost
+ - DIR/lib/libboost_library_versions.*
+Create symbolic links:
+$ cd DIR/include; ln -s boost_version/boost
+$ cd DIR/lib; ln -s libboost_[library]_[version].[a/so] libboost_[library].[a/so]
+$ export LD_LIBRARY_PATH=DIR/lib:$LD_LIBRARY_PATH
+
+For users
+---------
+
+Download the latest package from http://hcl.ucd.ie/project/mpiblib
+
+$ tar -zxvf mpiblib-X.X.X.tar.gz
+$ cd mpiblib-X.X.X
+$ ./configure
+$ make all install
+
+Configuration
+-------------
+
+Packages:
+  --with-gsl-dir=DIR      GNU Scientific Library directory
+  --with-boost-dir=DIR    The Boost C++ libraries directory
+
+Check configure options:
+$ ./configure -h
+
+For developers
+--------------
+
+Required software:
+1. Subversion
+2. GNU autotools
+3. Doxygen, Graphviz and any TeX - optional (for reference manual)
+
+$ svn co svn+ssh://gforge.ucd.ie/var/lib/gforge/chroot/scmrepos/svn/cpm/trunk/MPIBlib
+$ cd MPIBlib
+$ autoreconf -i
+$ ./configure --enable-debug
+$ make all
+
+To create a package:
+$ svn log -v > ChangeLog
+$ make dist
