@@ -302,6 +302,39 @@ public:
 	}
 };
 
+
+/*
+ *  Hierarchical MPI containers
+ */
+
+/*! HBcast container */
+class MPIB_HBcast_container: public MPIB_buffer_container {
+private:
+	MPIB_HBcast hbcast;
+
+public:
+	MPIB_HBcast_container(MPIB_Bcast bcast) {
+		MPIB_coll_container::operation = "HMPI_Bcast";
+		MPIB_coll_container::initialize = initialize;
+		MPIB_coll_container::execute = execute;
+		this->hbcast = hbcast;
+	}
+
+	static int initialize(void* _this, MPI_Comm comm, int root, int M) {
+		MPIB_HBcast_container* container = (MPIB_HBcast_container*)_this;
+		container->buffer = (char*)malloc(sizeof(char) * M);
+		return 0;
+	}
+
+	static int execute(void* _this, MPI_Comm comm, int root, int M) {
+		MPIB_HBcast_container* container = (MPIB_HBcast_container*)_this;
+		return container->hbcast(container->buffer, M, MPI_CHAR, root, comm, 1, 4); //TODO
+	}
+};
+
+
+
+
 /*!
  * \}
  */

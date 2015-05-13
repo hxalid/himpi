@@ -59,6 +59,7 @@ int main(int argc, char** argv) {
 		len = strlen(library) + 1;
 	MPI_Bcast(&len, 1, MPI_INT, 0, MPI_COMM_WORLD);
 	MPI_Bcast(library, len, MPI_CHAR, 0, MPI_COMM_WORLD);
+
 	handle = dlopen(library, RTLD_LAZY);
 	if (handle == NULL) {
 		if (rank == 0)

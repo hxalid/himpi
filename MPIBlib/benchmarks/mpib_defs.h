@@ -49,6 +49,16 @@ typedef int (*MPIB_Reduce)(void* sendbuf, void* recvbuf, int count, MPI_Datatype
 typedef int (*MPIB_Alltoall)(void* sendbuf, int sendcount, MPI_Datatype sendtype, void* recvbuf, int recvcount, MPI_Datatype recvtype,
 	MPI_Comm comm);
 
+/*
+ * typedefs for HMPI functions
+ */
+
+/*! HBcast typedef */
+typedef int (*MPIB_HBcast)(void* buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm, int rec, int alg);
+
+
+
+
 #ifdef __cplusplus
 }
 #endif

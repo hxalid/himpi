@@ -15868,7 +15868,7 @@ else
 fi
 
 
-ac_config_files="$ac_config_files Makefile p2p/Makefile collectives/Makefile benchmarks/Makefile tools/Makefile tests/Makefile"
+ac_config_files="$ac_config_files Makefile p2p/Makefile benchmarks/Makefile"
 
 
 
@@ -19103,10 +19103,7 @@ do
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "p2p/Makefile") CONFIG_FILES="$CONFIG_FILES p2p/Makefile" ;;
-    "collectives/Makefile") CONFIG_FILES="$CONFIG_FILES collectives/Makefile" ;;
     "benchmarks/Makefile") CONFIG_FILES="$CONFIG_FILES benchmarks/Makefile" ;;
-    "tools/Makefile") CONFIG_FILES="$CONFIG_FILES tools/Makefile" ;;
-    "tests/Makefile") CONFIG_FILES="$CONFIG_FILES tests/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac

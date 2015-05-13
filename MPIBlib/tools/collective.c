@@ -119,6 +119,7 @@ int main(int argc, char** argv) {
 		}
 	}
 
+
 	MPIB_getopt_help_bcast(&exit, 0, comm);
 	if (exit) {
 		MPI_Finalize();
@@ -144,6 +145,7 @@ int main(int argc, char** argv) {
 		len = strlen(library) + 1;
 	MPI_Bcast(&len, 1, MPI_INT, 0, comm);
 	MPI_Bcast(library, len, MPI_CHAR, 0, comm);
+
 	handle = dlopen(library, RTLD_LAZY);
 	if (handle == NULL) {
 		fprintf(stderr, "%d: %s\n", rank, dlerror());

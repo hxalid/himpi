@@ -4,6 +4,10 @@
 #include <getopt.h>
 #include <mpi.h>
 
+#include <dlfcn.h>
+
+#include "MPIBlib/benchmarks/mpib.h"
+
 #include "config.h"
 
 //#include "hbcast_old.h"
@@ -260,6 +264,29 @@ int main(int argc, char* argv[]) {
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
+
+
+  //  void* handle = dlopen("/usr/local/lib/libmpi.dylib", RTLD_LAZY);
+  //  void* func = dlsym(handle, "MPI_Bcast");
+  //  typedef int (*MPIB_Bcast)(void* buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm);
+
+    MPIB_result result;
+    MPIB_precision precision;
+    MPIB_getopt_precision_default(&precision);
+    MPIB_coll_container* container = (MPIB_coll_container*)MPIB_Bcast_container_alloc(MPI_Bcast);
+
+    int M = 1024;
+    double time_mpiblib = 0;
+    if (rank == 0)
+    		MPIB_print_coll_th("MPI_Bcast", "MAX", 8, 0, precision); //TODO, 8
+    int start = MPI_Wtime();
+    int err = MPIB_measure_max(container, MPI_COMM_WORLD, 0, M, precision, &result);
+    time_mpiblib += MPI_Wtime() - start;
+	if (rank == 0) {
+		MPIB_print_coll_tr(result);
+        fprintf(stdout, "Time: %le\n", time_mpiblib);
+	}
+
     /* Shut down MPI */
     HMPI_Finalize();
 } /* main */

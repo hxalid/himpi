@@ -44,10 +44,7 @@ AC_CHECK_LIB([boost_graph], [main], [], AC_MSG_ERROR([boost_graph is required bu
 AC_CONFIG_FILES([
 	Makefile
 	p2p/Makefile
-	collectives/Makefile
 	benchmarks/Makefile
-	tools/Makefile
-	tests/Makefile
 ])
 
 DX_PS_FEATURE([OFF])
