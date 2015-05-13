@@ -54,7 +54,7 @@ typedef int (*MPIB_Alltoall)(void* sendbuf, int sendcount, MPI_Datatype sendtype
  */
 
 /*! HBcast typedef */
-typedef int (*MPIB_HBcast)(void* buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm, int rec, int alg);
+typedef int (*MPIB_HBcast)(void* buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm);
 
 
 

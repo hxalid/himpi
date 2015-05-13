@@ -16,7 +16,7 @@
 //const char *HMPI_CONF_FILE_NAME = "fayil.conf";
 
 
-int HMPI_Bcast(void *buffer, int count, MPI_Datatype datatype,
+int HMPI_Bcast_internal(void *buffer, int count, MPI_Datatype datatype,
         int root, MPI_Comm comm, int rec, int alg) {
     int pg;
     int rank;
@@ -100,6 +100,14 @@ int HMPI_Bcast(void *buffer, int count, MPI_Datatype datatype,
 
     return MPI_SUCCESS;
         
+}
+
+//TODO
+int HMPI_Bcast(void *buffer, int count, MPI_Datatype datatype,
+        int root, MPI_Comm comm) {
+	int rec = 1;
+	int alg = 0;
+	return HMPI_Bcast_internal(buffer, count, datatype, root, comm, rec, alg);
 }
 
 

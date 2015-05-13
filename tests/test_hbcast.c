@@ -179,7 +179,7 @@ int main(int argc, char* argv[]) {
 			for (i = 0; i < reps; i++) {
 				MPI_Barrier(MPI_COMM_WORLD);
 				start_time = MPI_Wtime();
-				HMPI_Bcast(array, msg_size, MPI_CHAR, root, MPI_COMM_WORLD, rec, alg);
+				HMPI_Bcast(array, msg_size, MPI_CHAR, root, MPI_COMM_WORLD);
 				elapsed_time += (MPI_Wtime() - start_time);
 			}
 
@@ -273,12 +273,12 @@ int main(int argc, char* argv[]) {
     MPIB_result result;
     MPIB_precision precision;
     MPIB_getopt_precision_default(&precision);
-    MPIB_coll_container* container = (MPIB_coll_container*)MPIB_Bcast_container_alloc(MPI_Bcast);
+    MPIB_coll_container* container = (MPIB_coll_container*)MPIB_Bcast_container_alloc(HMPI_Bcast);
 
     int M = 1024;
     double time_mpiblib = 0;
     if (rank == 0)
-    		MPIB_print_coll_th("MPI_Bcast", "MAX", 8, 0, precision); //TODO, 8
+    		MPIB_print_coll_th("MPI_HBcast", "MAX", 8, 0, precision); //TODO, 8
     int start = MPI_Wtime();
     int err = MPIB_measure_max(container, MPI_COMM_WORLD, 0, M, precision, &result);
     time_mpiblib += MPI_Wtime() - start;

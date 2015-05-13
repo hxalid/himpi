@@ -328,7 +328,7 @@ public:
 
 	static int execute(void* _this, MPI_Comm comm, int root, int M) {
 		MPIB_HBcast_container* container = (MPIB_HBcast_container*)_this;
-		return container->hbcast(container->buffer, M, MPI_CHAR, root, comm, 1, 4); //TODO
+		return container->hbcast(container->buffer, M, MPI_CHAR, root, comm); //TODO
 	}
 };
 

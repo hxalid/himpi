@@ -28,7 +28,7 @@ extern const char *HMPI_CONF_FILE_NAME;
 int validate_input(int num_groups, int num_procs);
 
 int HMPI_Bcast(void *buffer, int count, MPI_Datatype datatype,
-        int root, MPI_Comm comm_world, int rec, int alg);
+        int root, MPI_Comm comm_world);
 
 
 int HMPI_Reduce(void *snd_buffer, void* rcv_buffer, int count, MPI_Datatype datatype, MPI_Op op,
