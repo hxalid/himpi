@@ -289,9 +289,10 @@ int main(int argc, char* argv[]) {
 	}
 */
 
-	int optimal_groups = get_hbcast_group(1024, MPI_CHAR, 0, MPI_COMM_WORLD, num_proc, 1, 0); //TODO
-	if (rank == 0)
-		fprintf(stdout, "Optimal groups: %d\n", optimal_groups);
+	//int optimal_groups = get_hbcast_group(1024, MPI_CHAR, 0, MPI_COMM_WORLD, 1, 0); //TODO
+    save_hbcast_optimal_groups(1024, MPI_CHAR, 0, MPI_COMM_WORLD, 1, 0);
+//	if (rank == 0)
+	//	fprintf(stdout, "Optimal groups: %d\n", optimal_groups);
 
     /* Shut down MPI */
     HMPI_Finalize();

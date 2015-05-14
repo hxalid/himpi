@@ -89,11 +89,11 @@ int HMPI_Bcast_internal(void *buffer, int count, MPI_Datatype datatype,
     	MPIX_Get_property(comm, MPIDO_RECT_COMM, &(bcast_response.rec_comm_world));
 #endif
         
-        fprintf(stdout, "Using non-hierarchical bcast\n");
+       // fprintf(stdout, "Using non-hierarchical bcast\n");
         hpnla_bcast(buffer, count, datatype, root, comm, alg);
     } else if (!validate_groups(num_groups, comm_size)) {
         /*TODO*/
-        fprintf(stdout, "Wrong number of groups\n");
+       // fprintf(stdout, "Wrong number of groups\n");
     }
 
     return MPI_SUCCESS;
@@ -107,7 +107,7 @@ int HMPI_Bcast(void *buffer, int count, MPI_Datatype datatype,
 	int alg = 0;
 	int num_groups = hmpi_get_num_groups(comm, HMPI_CONF_FILE_NAME);
 
-	return HMPI_Bcast_internal(buffer, count, datatype, root, comm, num_groups, rec, alg);
+	return HMPI_Bcast_internal(buffer, count, datatype, root, comm, 2, rec, alg);
 }
 
 

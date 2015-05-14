@@ -11,7 +11,9 @@
 #include "hmpi/hmpi.h"
 
 int get_hbcast_group(int count, MPI_Datatype datatype,
-		int root, MPI_Comm comm_world, int num_groups, int rec, int alg);
+		int root, MPI_Comm comm_world, int rec, int alg);
 
+void save_hbcast_optimal_groups(int count, MPI_Datatype datatype, int root,
+		MPI_Comm comm_world, int rec, int alg);
 
 #endif /* TOOLS_OPTIMAL_GROUPS_H_ */
