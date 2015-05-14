@@ -5,11 +5,13 @@ include_HEADERS = \
         hpnla_conf.h \
         hpnla_bind.h \
         hpnla_timer.h \
-        utils.h
+        utils.h \
+        optimal_groups.h
 
 noinst_LTLIBRARIES = libhpnla_tools.la
 libhpnla_tools_la_SOURCES = \
         hpnla_conf.c \
         hpnla_bind.c \
         hpnla_timer.c \
-        utils.c 
+        utils.c \
+        optimal_groups.c

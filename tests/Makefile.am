@@ -5,6 +5,7 @@ test_hbcast_SOURCES = \
     test_hbcast.c \
     mpi_bcast_algs.c \
     mpi_bcast_algs.h 
+nodist_EXTRA_test_hbcast_SOURCES = dummy.cpp
 
     
 test_hbcast_LDADD = \

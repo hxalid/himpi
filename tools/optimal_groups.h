@@ -10,7 +10,7 @@
 
 #include "hmpi/hmpi.h"
 
-int get_hbcast_group(void *buffer, int count, MPI_Datatype datatype,
+int get_hbcast_group(int count, MPI_Datatype datatype,
 		int root, MPI_Comm comm_world, int num_groups, int rec, int alg);
 
 

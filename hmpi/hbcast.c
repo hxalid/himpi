@@ -17,7 +17,7 @@
 
 
 int HMPI_Bcast_internal(void *buffer, int count, MPI_Datatype datatype,
-        int root, MPI_Comm comm, int rec, int alg) {
+        int root, MPI_Comm comm, int num_groups, int rec, int alg) {
     int pg;
     int rank;
     int comm_size;
@@ -32,8 +32,6 @@ int HMPI_Bcast_internal(void *buffer, int count, MPI_Datatype datatype,
     MPI_Comm_size(comm, &comm_size);
     
     if (comm_size == 1) return MPI_SUCCESS;
-
-    int num_groups = hmpi_get_num_groups(comm, HMPI_CONF_FILE_NAME);
 
     /*TODO make num_groups configurable*/
     if (comm_size > HBCAST_MIN_PROCS && validate_groups(num_groups, comm_size)) {
@@ -107,7 +105,9 @@ int HMPI_Bcast(void *buffer, int count, MPI_Datatype datatype,
         int root, MPI_Comm comm) {
 	int rec = 1;
 	int alg = 0;
-	return HMPI_Bcast_internal(buffer, count, datatype, root, comm, rec, alg);
+	int num_groups = hmpi_get_num_groups(comm, HMPI_CONF_FILE_NAME);
+
+	return HMPI_Bcast_internal(buffer, count, datatype, root, comm, num_groups, rec, alg);
 }
 
 

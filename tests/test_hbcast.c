@@ -13,6 +13,7 @@
 //#include "hbcast_old.h"
 #include "../hmpi/hmpi.h"
 #include "../tools/utils.h"
+#include "../tools/optimal_groups.h"
 
 #ifdef HAVE_MPIX_H
 #include <mpix.h>
@@ -270,7 +271,7 @@ int main(int argc, char* argv[]) {
   //  void* func = dlsym(handle, "MPI_Bcast");
   //  typedef int (*MPIB_Bcast)(void* buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm);
 
-    MPIB_result result;
+/*    MPIB_result result;
     MPIB_precision precision;
     MPIB_getopt_precision_default(&precision);
     MPIB_coll_container* container = (MPIB_coll_container*)MPIB_Bcast_container_alloc(HMPI_Bcast);
@@ -286,6 +287,11 @@ int main(int argc, char* argv[]) {
 		MPIB_print_coll_tr(result);
         fprintf(stdout, "Time: %le\n", time_mpiblib);
 	}
+*/
+
+	int optimal_groups = get_hbcast_group(1024, MPI_CHAR, 0, MPI_COMM_WORLD, num_proc, 1, 0); //TODO
+	if (rank == 0)
+		fprintf(stdout, "Optimal groups: %d\n", optimal_groups);
 
     /* Shut down MPI */
     HMPI_Finalize();
