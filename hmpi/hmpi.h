@@ -24,8 +24,12 @@
 
 //extern int num_groups;
 extern const char *HMPI_CONF_FILE_NAME;
+//extern const char *HMPI_CONF_OUT_FILE_NAME;
 
 int validate_input(int num_groups, int num_procs);
+
+int hierarchical_broadcast(void *buffer, int count, MPI_Datatype datatype,
+        int root, MPI_Comm comm, int num_groups, int num_levels, int alg_in, int alg_out);
 
 int HMPI_Bcast(void *buffer, int count, MPI_Datatype datatype,
         int root, MPI_Comm comm_world);

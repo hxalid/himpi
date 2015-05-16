@@ -13,6 +13,8 @@ typedef struct hmpi_conf {
 	int num_procs;
 	int num_groups;
 	int num_levels;
+	int alg_in;
+	int alg_out;
 } hmpi_conf;
 
 
@@ -23,8 +25,10 @@ char *create_rand_elms(int num_elements);
 
 double hdnla_conf_int(double cl, int reps, double* T);
 
-int hmpi_get_num_groups(MPI_Comm comm, const char* filename);
-void hmpi_print_conf(FILE* file, int* num_procs, int* num_groups, int* num_levels, int size);
+hmpi_conf hmpi_get_my_conf(MPI_Comm comm, const char* filename);
+
+void hmpi_print_conf(FILE* file, int* num_procs, int* num_groups, int* num_levels, int* alg_in, int* alg_out, int size);
+
 hmpi_conf* hmpi_get_conf_all(const char* filename, int* num_lines);
 
 

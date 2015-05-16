@@ -39,6 +39,9 @@ MPIB_coll_container* MPIB_Gatherv_container_alloc(MPIB_Gatherv gatherv, const do
 /*! Allocates Gatherv container */
 MPIB_coll_container* MPIB_Alltoall_container_alloc(MPIB_Alltoall alltoall);
 
+/*HMPI_Bcast container*/
+MPIB_coll_container* MPIB_HBcast_container_alloc(MPIB_Hbcast hbcast, int num_groups, int num_levels, int alg_in, int alg_out);
+
 #ifdef __cplusplus
 }
 #endif

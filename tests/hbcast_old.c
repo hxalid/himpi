@@ -5,7 +5,7 @@
 /*
  * TODO:  It works only for root=0. Fix it to work with any possible root.
  */
-t_bcast_response MPI_HBcast(void *buffer, int count, MPI_Datatype datatype,
+t_bcast_response MPI_HBcast_old(void *buffer, int count, MPI_Datatype datatype,
         int root, MPI_Comm comm_world, int num_groups, int rec, int alg, int debug) {
     int pg;
     int rank;

@@ -192,7 +192,7 @@ int main(int argc, char* argv[]) {
 				fprintf(stdout, "HMPI_Bcast: %d %d %d %f %f %d %d %d\n",
 						root,
 						num_proc,
-						hmpi_get_num_groups(MPI_COMM_WORLD, "fayil.conf"),
+						hmpi_get_my_conf(MPI_COMM_WORLD, "fayil.conf").num_groups,
 						msg_size * sizeof (char) / 1024.,
 						max_time,
 						rec,
@@ -290,9 +290,8 @@ int main(int argc, char* argv[]) {
 */
 
 	//int optimal_groups = get_hbcast_group(1024, MPI_CHAR, 0, MPI_COMM_WORLD, 1, 0); //TODO
-    save_hbcast_optimal_groups(1024, MPI_CHAR, 0, MPI_COMM_WORLD, 1, 0);
-//	if (rank == 0)
-	//	fprintf(stdout, "Optimal groups: %d\n", optimal_groups);
+    save_hbcast_optimal_groups(1024, MPI_CHAR, 0, MPI_COMM_WORLD, 1, 0, 0);
+
 
     /* Shut down MPI */
     HMPI_Finalize();

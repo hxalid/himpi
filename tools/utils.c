@@ -49,9 +49,9 @@ hmpi_conf* hmpi_get_conf_all(const char* filename, int* num_lines) {
 
 		confs = realloc(confs, sizeof(hmpi_conf) * (n + 1));
 		int pos = 0;
-		int err = sscanf(line, "%d %d %d %n", &confs[n].num_procs,
-				&confs[n].num_groups, &confs[n].num_levels, &pos);
-		if (err < 3) {
+		int err = sscanf(line, "%d %d %d %d %d %n", &confs[n].num_procs,
+				&confs[n].num_groups, &confs[n].num_levels, &confs[n].alg_in, &confs[n].alg_out, &pos);
+		if (err < 5) {
 			fprintf(stderr, "Error reading line%d: \"%s\" err:%d in %s\n", n,
 					line, err, __func__);
 			MPI_Abort(MPI_COMM_WORLD, 204);
@@ -68,42 +68,53 @@ hmpi_conf* hmpi_get_conf_all(const char* filename, int* num_lines) {
 
 
 
-int hmpi_get_num_groups(MPI_Comm comm, const char* filename) {
+hmpi_conf hmpi_get_my_conf(MPI_Comm comm, const char* filename) {
 	//get number of groups per process.
 	int num_lines;
 	hmpi_conf* confs = hmpi_get_conf_all(filename, &num_lines);
+	hmpi_conf my_conf;
 	int num_procs;
 	MPI_Comm_size(comm, &num_procs);
 
 	int i;
-	int num_groups;
 
 	//TODO
-	if (confs == NULL)
-		num_groups = 1;
+	if (confs == NULL) {
+		my_conf.num_procs=-1;
+		my_conf.num_groups=-1;
+		my_conf.num_levels=-1;
+		my_conf.alg_in=0;
+		my_conf.alg_out=0;
+	}
+
 
 	for(i = 0; i < num_lines; i++){
 		if (confs[i].num_procs == num_procs) {
-			num_groups = confs[i].num_groups;
+			my_conf = confs[i];
 			break;
 		} else {
-			num_groups = 1;
+			my_conf.num_procs=-1;
+			my_conf.num_groups=-1;
+			my_conf.num_levels=-1;
+			my_conf.alg_in=0;
+			my_conf.alg_out=0;
 		}
 	}
 
-	return num_groups;
+	return my_conf;
 }
 
 
 
 
-void hmpi_print_conf(FILE* file, int* num_procs, int* num_groups, int* num_levels, int size){
+void hmpi_print_conf(FILE* file, int* num_procs, int* num_groups, int* num_levels,
+		int* alg_in, int* alg_out, int size){
 	if(file == NULL) file = stdout;
 
 	int i=0;
-	fprintf(file, "#num_procs\tnum_groups\tnum_levels\n");
+	fprintf(file, "#num_procs\tnum_groups\tnum_levels\talg_in\talg_out\n");
 	for(i = 0; i < size; i++){
-		fprintf(file, "%d\t%d\t%d\n", num_procs[i], num_groups[i], num_levels[i]);
+		fprintf(file, "%d\t%d\t%d\t%d\n", num_procs[i], num_groups[i], num_levels[i], alg_in[i], alg_out[i]);
 	}
 
 	return;

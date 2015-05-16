@@ -11,20 +11,19 @@
 #include <stdlib.h>
 
 int get_hbcast_group(int count, MPI_Datatype datatype, int root,
-		MPI_Comm comm_world, int rec, int alg) {
+		MPI_Comm comm_world, int num_levels, int alg_in, int alg_out) {
 
 	MPIB_result result;
 	MPIB_precision precision;
 	MPIB_getopt_precision_default(&precision);
-	MPIB_coll_container* container =
-			(MPIB_coll_container*) MPIB_Bcast_container_alloc(HMPI_Bcast);
+
 
 	int my_rank;
 	int num_procs;
 	MPI_Comm_rank(comm_world, &my_rank);
 	MPI_Comm_size(comm_world, &num_procs);
 
-	double* g_times = (double*) calloc(num_procs, sizeof(double));
+	double* g_times = (double*) calloc(num_procs-1, sizeof(double));
 	if (g_times == NULL) {
 		fprintf(stderr,
 				"[get_hbcast_group]:Can't allocate memory for g_times\n");
@@ -35,11 +34,16 @@ int get_hbcast_group(int count, MPI_Datatype datatype, int root,
 	MPI_Type_get_extent(datatype, &lb, &extent);
 	int message_size = extent * count;
 
-	int i = 0;
-	for (i = 0; i < num_procs; i++) {
+	int g = 0;
+	for (g = 0; g < num_procs-1; g++) {
+		MPIB_coll_container* container =
+					(MPIB_coll_container*) MPIB_HBcast_container_alloc(hierarchical_broadcast,
+							g, num_levels, alg_in, alg_out);
+
+
 		int err = MPIB_measure_max(container, comm_world, 0, message_size,
 				precision, &result);
-		g_times[i] = result.T;
+		g_times[g] = result.T;
 	}
 
 	//TODO
@@ -55,7 +59,7 @@ int get_hbcast_group(int count, MPI_Datatype datatype, int root,
  * from HBCAST_MIN_PROCS up to comm_size and save it into a config file.
  */
 void save_hbcast_optimal_groups(int count, MPI_Datatype datatype, int root,
-		MPI_Comm comm_world, int rec, int alg) {
+		MPI_Comm comm_world, int num_levels, int alg_in, int alg_out) {
 	int i;
 	int rank;
 	int comm_size;
@@ -63,25 +67,38 @@ void save_hbcast_optimal_groups(int count, MPI_Datatype datatype, int root,
 	MPI_Comm_rank(comm_world, &rank);
 	MPI_Comm_size(comm_world, &comm_size);
 
-	//TODO
-	for (i = 1; i < comm_size-HBCAST_MIN_PROCS; i++) {
+	FILE* fp;
+	if (rank == 0) {
+		//TODO: configurable filename
+		char* filename = "outputum";
+		fp = fopen(filename, "w"); //TODO:  should I overwrite?
+		fprintf(fp, "#num_procs\tnum_groups\tnum_levels\talg_in\talg_out\n");
+		if (fp == NULL) {
+			printf("Try to open the configuration file %s\n", filename);
+			perror("fopen");
+			MPI_Abort(MPI_COMM_WORLD, 201);
+		}
+	}
+
+	for (i = 0; i < comm_size-HBCAST_MIN_PROCS; i++) {
 		MPI_Comm sub_comm;
 		MPI_Comm_split(comm_world, (comm_size - rank > i) ? 0 : MPI_UNDEFINED,
 				rank, &sub_comm);
 		if (sub_comm != MPI_COMM_NULL) {
 			MPI_Comm_size(sub_comm, &new_size);
 
-			int group = get_hbcast_group(count, datatype, root, sub_comm, rec,
-					alg);
+			int group = get_hbcast_group(count, datatype, root, sub_comm, num_levels,
+					alg_in, alg_out);
 			if (group != -1) {
-				//TODO: write (comm_size, new_size, group) into a config file
-				fprintf(stdout, "comm_size=%d, rank=%d, new_size=%d, i=%d, group=%d\n",
-						comm_size, rank, new_size, i, group);
+				if (rank == 0)
+					fprintf(fp, "%d\t%d\t%d\n", new_size, group, 1);
 			}
 
 			MPI_Comm_free(&sub_comm);
 		}
 	}
+	if (rank==0)
+		fclose(fp);
 
 }
 
