@@ -12,18 +12,21 @@
 
 int get_hbcast_group(int count, MPI_Datatype datatype, int root,
 		MPI_Comm comm_world, int num_levels, int alg_in, int alg_out) {
-
 	MPIB_result result;
 	MPIB_precision precision;
 	MPIB_getopt_precision_default(&precision);
-
 
 	int my_rank;
 	int num_procs;
 	MPI_Comm_rank(comm_world, &my_rank);
 	MPI_Comm_size(comm_world, &num_procs);
 
-	double* g_times = (double*) calloc(num_procs-1, sizeof(double));
+	int g, num_groups=0;
+	for (g = 1; g < num_procs; g++) {
+		if (num_procs%g==0) num_groups++;
+	}
+
+	double* g_times = (double*) calloc(num_groups, sizeof(double));
 	if (g_times == NULL) {
 		fprintf(stderr,
 				"[get_hbcast_group]:Can't allocate memory for g_times\n");
@@ -34,24 +37,24 @@ int get_hbcast_group(int count, MPI_Datatype datatype, int root,
 	MPI_Type_get_extent(datatype, &lb, &extent);
 	int message_size = extent * count;
 
-	int g = 0;
-	for (g = 0; g < num_procs-1; g++) {
-		MPIB_coll_container* container =
-					(MPIB_coll_container*) MPIB_HBcast_container_alloc(hierarchical_broadcast,
-							g, num_levels, alg_in, alg_out);
+	int i=0;
+	for (g = 1; g < num_procs; g++) {
+		if (num_procs%g==0) {
+			MPIB_coll_container* container =
+						(MPIB_coll_container*) MPIB_HBcast_container_alloc(hierarchical_broadcast,
+								g, num_levels, alg_in, alg_out);
 
-
-		int err = MPIB_measure_max(container, comm_world, 0, message_size,
-				precision, &result);
-		g_times[g] = result.T;
+			int err = MPIB_measure_max(container, comm_world, 0, message_size,
+					precision, &result);
+			g_times[i++] = result.T;
+		}
 	}
 
 	//TODO
-	int group =
-			my_rank == root ? gsl_stats_min_index(g_times, 1, num_procs) : -1;
+	int group = gsl_stats_min_index(g_times, 1, num_groups);
 	free(g_times);
 
-	return group + 1; //TODO: num_groups = rank + 1
+	return group+1;
 }
 
 /*
@@ -60,7 +63,7 @@ int get_hbcast_group(int count, MPI_Datatype datatype, int root,
  */
 void save_hbcast_optimal_groups(int count, MPI_Datatype datatype, int root,
 		MPI_Comm comm_world, int num_levels, int alg_in, int alg_out) {
-	int i;
+	int g;
 	int rank;
 	int comm_size;
 	int new_size;
@@ -80,9 +83,10 @@ void save_hbcast_optimal_groups(int count, MPI_Datatype datatype, int root,
 		}
 	}
 
-	for (i = 0; i < comm_size-HBCAST_MIN_PROCS; i++) {
+
+	for (g = 0; g < comm_size-HBCAST_MIN_PROCS; g++) {
 		MPI_Comm sub_comm;
-		MPI_Comm_split(comm_world, (comm_size - rank > i) ? 0 : MPI_UNDEFINED,
+		MPI_Comm_split(comm_world, (comm_size - rank > g) ? 0 : MPI_UNDEFINED,
 				rank, &sub_comm);
 		if (sub_comm != MPI_COMM_NULL) {
 			MPI_Comm_size(sub_comm, &new_size);
