@@ -68,7 +68,7 @@ int get_hmpi_group(int count, MPI_Datatype datatype, int root,
  * Calculate optimal number of groups for all number of processes
  * from HBCAST_MIN_PROCS up to comm_size and save it into a config file.
  */
-void save_hbcast_optimal_groups(int count, MPI_Datatype datatype, int root,
+void save_hmpi_optimal_groups(int count, MPI_Datatype datatype, int root,
 		MPI_Comm comm_world, int num_levels, int alg_in, int alg_out, hmpi_operations op_id) {
 	int g;
 	int rank;
