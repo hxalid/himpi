@@ -341,6 +341,51 @@ public:
 };
 
 
+/*! HBcast container */
+class MPIB_HReduce_container: public MPIB_coll_container {
+private:
+	MPIB_Hreduce hreduce;
+	char* sendbuf;
+	char* recvbuf;
+	int num_groups;
+	int num_levels;
+	int alg_in;
+	int alg_out;
+public:
+	MPIB_HReduce_container(MPIB_Hreduce hreduce, int num_groups, int num_levels, int alg_in, int alg_out) {
+		MPIB_coll_container::operation = "Hreduce";
+		MPIB_coll_container::initialize = initialize;
+		MPIB_coll_container::execute = execute;
+		MPIB_coll_container::finalize = finalize;
+		this->hreduce = hreduce;
+		this->num_groups = num_groups + 1;
+		this->num_levels = num_levels;
+		this->alg_in = alg_in;
+		this->alg_out = alg_out;
+	}
+
+	static int initialize(void* _this, MPI_Comm comm, int root, int M) {
+		MPIB_HReduce_container* container = (MPIB_HReduce_container*)_this;
+		container->sendbuf = (char*)malloc(sizeof(char) * M);
+		int rank;
+		MPI_Comm_rank(comm, &rank);
+		container->recvbuf = rank == root ? (char*)malloc(sizeof(char) * M) : NULL;
+		return 0;
+	}
+
+	static int execute(void* _this, MPI_Comm comm, int root, int M) {
+		MPIB_HReduce_container* container = (MPIB_HReduce_container*)_this;
+		return container->hreduce(container->sendbuf, container->recvbuf, M, MPI_CHAR, MPI_MAX, root, comm,
+				container->num_groups, container->num_levels, container->alg_in, container->alg_out); //TODO
+	}
+
+	static int finalize(void* _this, MPI_Comm comm, int root) {
+		MPIB_HReduce_container* container = (MPIB_HReduce_container*)_this;
+		free(container->sendbuf);
+		free(container->recvbuf);
+		return 0;
+	}
+};
 
 /*!
  * \}

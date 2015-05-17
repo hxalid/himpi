@@ -31,12 +31,15 @@ int validate_input(int num_groups, int num_procs);
 int hierarchical_broadcast(void *buffer, int count, MPI_Datatype datatype,
         int root, MPI_Comm comm, int num_groups, int num_levels, int alg_in, int alg_out);
 
+int hierarchical_reduce(void *snd_buffer, void* rcv_buffer, int count, MPI_Datatype datatype, MPI_Op op,
+        int root, MPI_Comm comm_world, int num_groups, int num_levels, int alg_in, int alg_out);
+
 int HMPI_Bcast(void *buffer, int count, MPI_Datatype datatype,
         int root, MPI_Comm comm_world);
 
 
 int HMPI_Reduce(void *snd_buffer, void* rcv_buffer, int count, MPI_Datatype datatype, MPI_Op op,
-        int root, MPI_Comm comm_world, int num_groups, int rec, int alg, int debug, int myrank);
+        int root, MPI_Comm comm);
 
 int HMPI_Init( int *argc, char ***argv );
 

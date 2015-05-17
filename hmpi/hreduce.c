@@ -6,14 +6,16 @@
  */
 
 #include <mpi.h>
+#include <stdlib.h>
 
 #include "hmpi.h"
+#include "tools/utils.h"
 
 /*
  * TODO:  It works only for root=0. Fix it to work with any possible root.
  */
-int HMPI_Reduce(void *snd_buffer, void* rcv_buffer, int count, MPI_Datatype datatype, MPI_Op op,
-        int root, MPI_Comm comm_world, int num_groups, int rec, int alg, int debug, int myrank) {
+int hierarchical_reduce(void *snd_buffer, void* rcv_buffer, int count, MPI_Datatype datatype, MPI_Op op,
+        int root, MPI_Comm comm_world, int num_groups, int num_levels, int alg_in, int alg_out) {
 	int err;
     int pg;
     int rank;
@@ -49,7 +51,7 @@ int HMPI_Reduce(void *snd_buffer, void* rcv_buffer, int count, MPI_Datatype data
         /*
          * Start reduce inside groups
          */
-        switch (rec) {
+        switch (num_levels) {
             case 1: // 1 level of hierarchy
                 reduce_out = (double*) malloc(count*sizeof(double));
 
@@ -66,16 +68,16 @@ int HMPI_Reduce(void *snd_buffer, void* rcv_buffer, int count, MPI_Datatype data
 
 
          /*
-         * Start reduce between groups, if rec == -1 then reduce only inside
+         * Start reduce between groups, if num_levels == -1 then reduce only inside
          */
-        if (out_group_comm != MPI_COMM_NULL && err == MPI_SUCCESS && rec != -1) {
+        if (out_group_comm != MPI_COMM_NULL && err == MPI_SUCCESS && num_levels != -1) {
             root_outside = root; //  root / pg;
-            err = MPI_Reduce( (rec==1)?reduce_out:snd_buffer,  rcv_buffer, count, datatype, op, root_outside, out_group_comm);
+            err = MPI_Reduce( (num_levels==1)?reduce_out:snd_buffer,  rcv_buffer, count, datatype, op, root_outside, out_group_comm);
         //  MPI_Reduce(&reduce_in, &reduce_out, 1, datatype, op, root_outside, out_group_comm);
         }
 
         //TODO: check
-        if (rec==1) free(reduce_out);
+        if (num_levels==1) free(reduce_out);
 
         if (out_group_comm != MPI_COMM_NULL)
             MPI_Comm_free(&out_group_comm);
@@ -91,3 +93,22 @@ int HMPI_Reduce(void *snd_buffer, void* rcv_buffer, int count, MPI_Datatype data
 
     return err;
 }
+
+
+//TODO
+int HMPI_Reduce(void *snd_buffer, void* rcv_buffer, int count, MPI_Datatype datatype, MPI_Op op,
+        int root, MPI_Comm comm) {
+	hmpi_conf my_conf = hmpi_get_my_conf(comm, HMPI_CONF_FILE_NAME);
+
+	return hierarchical_reduce(snd_buffer, rcv_buffer, count, datatype, op, root, comm, my_conf.num_groups,
+			my_conf.num_levels, my_conf.alg_in, my_conf.alg_out);
+}
+
+
+
+
+
+
+
+
+

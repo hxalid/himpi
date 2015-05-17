@@ -42,6 +42,9 @@ MPIB_coll_container* MPIB_Alltoall_container_alloc(MPIB_Alltoall alltoall);
 /*HMPI_Bcast container*/
 MPIB_coll_container* MPIB_HBcast_container_alloc(MPIB_Hbcast hbcast, int num_groups, int num_levels, int alg_in, int alg_out);
 
+MPIB_coll_container* MPIB_HReduce_container_alloc(MPIB_Hreduce hreduce, int num_groups, int num_levels, int alg_in, int alg_out);
+
+
 #ifdef __cplusplus
 }
 #endif

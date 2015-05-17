@@ -42,3 +42,9 @@ extern "C" MPIB_coll_container* MPIB_HBcast_container_alloc(MPIB_Hbcast hbcast, 
 	return new MPIB_HBcast_container(hbcast, num_groups, num_levels, alg_in, alg_out);
 }
 
+
+extern "C" MPIB_coll_container* MPIB_HReduce_container_alloc(MPIB_Hreduce hreduce, int num_groups, int num_levels,
+		int alg_in, int alg_out) {
+	return new MPIB_HReduce_container(hreduce, num_groups, num_levels, alg_in, alg_out);
+}
+

@@ -57,6 +57,8 @@ typedef int (*MPIB_Alltoall)(void* sendbuf, int sendcount, MPI_Datatype sendtype
 typedef int (*MPIB_Hbcast)(void* buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm,
 		int num_groups, int num_levels, int alg_in, int alg_out);
 
+typedef int (*MPIB_Hreduce)(void *snd_buffer, void* rcv_buffer, int count, MPI_Datatype datatype, MPI_Op op,
+        int root, MPI_Comm comm, int num_groups, int num_levels, int alg_in, int alg_out);
 
 #ifdef __cplusplus
 }
