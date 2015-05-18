@@ -80,11 +80,10 @@ void save_hmpi_optimal_groups(int count, MPI_Datatype datatype, int root,
 	FILE* fp;
 	if (rank == 0) {
 		//TODO: configurable filename
-		char* filename = "outputum";
-		fp = fopen(filename, "w"); //TODO:  should I overwrite?
+		fp = fopen(HMPI_CONF_FILE_NAME, "w"); //TODO:  should I overwrite?
 		fprintf(fp, "#num_procs\tnum_groups\tnum_levels\talg_in\talg_out\n");
 		if (fp == NULL) {
-			printf("Try to open the configuration file %s\n", filename);
+			printf("Try to open the configuration file %s\n", HMPI_CONF_FILE_NAME);
 			perror("fopen");
 			MPI_Abort(MPI_COMM_WORLD, 201);
 		}
@@ -101,7 +100,7 @@ void save_hmpi_optimal_groups(int count, MPI_Datatype datatype, int root,
 					num_levels, alg_in, alg_out, op_id);
 			if (group != -1) {
 				if (rank == 0)
-					fprintf(fp, "%d\t%d\t%d\n", new_size, group, 1);
+					fprintf(fp, "%d\t%d\t%d\t%d\t%d\n", new_size, group, 1, 0, 0);
 			}
 
 			MPI_Comm_free(&sub_comm);

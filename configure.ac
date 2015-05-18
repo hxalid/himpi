@@ -158,7 +158,7 @@ esac
 
 AC_CONFIG_FILES([
 	Makefile
-        hpnla/Makefile
+    hpnla/Makefile
 	hmpi/Makefile
 	cblas_wrappers/Makefile
 	communication/Makefile

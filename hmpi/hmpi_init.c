@@ -28,8 +28,11 @@ int HMPI_Init( int *argc, char ***argv ) {
 	//num_groups = hmpi_get_num_groups(MPI_COMM_WORLD, HMPI_CONF_FILE_NAME);
 #else
 	//num_groups = 0;
+	HMPI_CONF_FILE_NAME = HMPI_DEFAULT_CONF_FILE;
 	fprintf(stdout, "No group config file specified, g=sqrt(p) will be used\n");
 #endif
+
+
 
 	//Find out optimal number of groups here
 

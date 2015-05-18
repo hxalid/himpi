@@ -20,11 +20,10 @@
 
 #define HBCAST_MIN_PROCS 4
 #define HREDUCE_MIN_PROCS 4
-
+#define HMPI_DEFAULT_CONF_FILE "./default_file.conf"
 
 //extern int num_groups;
 extern const char *HMPI_CONF_FILE_NAME;
-//extern const char *HMPI_CONF_OUT_FILE_NAME;
 
 int validate_input(int num_groups, int num_procs);
 
