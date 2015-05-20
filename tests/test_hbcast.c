@@ -290,7 +290,7 @@ int main(int argc, char* argv[]) {
 */
 
 	//int optimal_groups = get_hbcast_group(1024, MPI_CHAR, 0, MPI_COMM_WORLD, 1, 0); //TODO
-    save_hmpi_optimal_groups(1024, MPI_CHAR, 0, MPI_COMM_WORLD, 1, 0, 0, op_reduce);
+ //   save_hmpi_optimal_groups(1024, MPI_CHAR, 0, MPI_COMM_WORLD, 1, 0, 0, op_reduce);
 
 
     /* Shut down MPI */
