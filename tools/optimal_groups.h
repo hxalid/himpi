@@ -15,10 +15,10 @@ typedef enum hmpi_operations {
    op_reduce
 } hmpi_operations;
 
-int get_hmpi_group(int count, MPI_Datatype datatype, int root,
+int get_hmpi_group(int msg_size, int root,
 		MPI_Comm comm_world, int num_levels, int alg_in, int alg_out, hmpi_operations op_id);
 
-void save_hmpi_optimal_groups(int count, MPI_Datatype datatype, int root,
+void save_hmpi_optimal_groups(int msg_size, int root,
 		MPI_Comm comm_world, int num_levels, int alg_in, int alg_out, hmpi_operations op_id);
 
 #endif /* TOOLS_OPTIMAL_GROUPS_H_ */

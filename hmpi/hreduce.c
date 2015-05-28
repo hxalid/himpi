@@ -98,7 +98,14 @@ int hierarchical_reduce(void *snd_buffer, void* rcv_buffer, int count, MPI_Datat
 //TODO
 int HMPI_Reduce(void *snd_buffer, void* rcv_buffer, int count, MPI_Datatype datatype, MPI_Op op,
         int root, MPI_Comm comm) {
-	hmpi_conf my_conf = hmpi_get_my_conf(comm, HMPI_CONF_FILE_NAME);
+	MPI_Aint extent, lb;
+	MPI_Type_get_extent(datatype, &lb, &extent);
+	int msg_size = extent * count;
+
+	/*
+	 * TODO: Are you sure all processes have to open config file for read?
+	 */
+	hmpi_conf my_conf = hmpi_get_my_conf(comm, msg_size, root, HMPI_CONF_FILE_NAME, op_reduce);
 
 	return hierarchical_reduce(snd_buffer, rcv_buffer, count, datatype, op, root, comm, my_conf.num_groups,
 			my_conf.num_levels, my_conf.alg_in, my_conf.alg_out);

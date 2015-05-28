@@ -273,7 +273,7 @@ int main(int argc, char* argv[]) {
   //  void* func = dlsym(handle, "MPI_Bcast");
   //  typedef int (*MPIB_Bcast)(void* buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm);
 
-    save_hmpi_optimal_groups(1024, MPI_CHAR, 0, MPI_COMM_WORLD, 1, 0, 0, op_bcast);
+  //  save_hmpi_optimal_groups(1024, 0, MPI_COMM_WORLD, 1, 0, 0, op_bcast);
 
     MPIB_result result;
     MPIB_precision precision;

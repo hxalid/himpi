@@ -10,7 +10,7 @@
 
 #include <stdlib.h>
 
-int get_hmpi_group(int count, MPI_Datatype datatype, int root,
+int get_hmpi_group(int msg_size, int root,
 		MPI_Comm comm_world, int num_levels, int alg_in, int alg_out,
 		hmpi_operations op_id) {
 	MPIB_result result;
@@ -35,9 +35,6 @@ int get_hmpi_group(int count, MPI_Datatype datatype, int root,
 		return -1; //TODO
 	}
 
-	MPI_Aint extent, lb;
-	MPI_Type_get_extent(datatype, &lb, &extent);
-	int message_size = extent * count;
 
 	int i = 0;
 	for (g = 1; g < num_procs; g++) {
@@ -51,7 +48,7 @@ int get_hmpi_group(int count, MPI_Datatype datatype, int root,
 						hierarchical_reduce, g, num_levels, alg_in, alg_out);
 			}
 
-			int err = MPIB_measure_max(container, comm_world, 0, message_size,
+			int err = MPIB_measure_max(container, comm_world, 0, msg_size,
 					precision, &result);
 			g_times[i++] = result.T;
 		}
@@ -68,7 +65,7 @@ int get_hmpi_group(int count, MPI_Datatype datatype, int root,
  * Calculate optimal number of groups for all number of processes
  * from HBCAST_MIN_PROCS up to comm_size and save it into a config file.
  */
-void save_hmpi_optimal_groups(int count, MPI_Datatype datatype, int root,
+void save_hmpi_optimal_groups(int msg_size, int root,
 		MPI_Comm comm_world, int num_levels, int alg_in, int alg_out, hmpi_operations op_id) {
 	int g;
 	int rank;
@@ -81,7 +78,7 @@ void save_hmpi_optimal_groups(int count, MPI_Datatype datatype, int root,
 	if (rank == 0) {
 		//TODO: configurable filename
 		fp = fopen(HMPI_CONF_FILE_NAME, "w"); //TODO:  should I overwrite?
-		fprintf(fp, "#num_procs\tnum_groups\tnum_levels\talg_in\talg_out\n");
+		fprintf(fp, "#num_procs\tnum_groups\tnum_levels\tmsg_size\talg_in\talg_out\n");
 		if (fp == NULL) {
 			fprintf(stdout, "Try to open the configuration file %s\n", HMPI_CONF_FILE_NAME);
 			perror("fopen");
@@ -96,11 +93,11 @@ void save_hmpi_optimal_groups(int count, MPI_Datatype datatype, int root,
 		if (sub_comm != MPI_COMM_NULL) {
 			MPI_Comm_size(sub_comm, &new_size);
 
-			int group = get_hmpi_group(count, datatype, root, sub_comm,
+			int group = get_hmpi_group(msg_size, root, sub_comm,
 					num_levels, alg_in, alg_out, op_id);
 			if (group != -1) {
 				if (rank == 0)
-					fprintf(fp, "%d\t%d\t%d\t%d\t%d\n", new_size, group, 1, 0, 0);
+					fprintf(fp, "%d\t%d\t%d\t%d\t%d\t%d\n", new_size, group, 1, msg_size, 0, 0);
 			}
 
 			MPI_Comm_free(&sub_comm);
