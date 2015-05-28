@@ -146,6 +146,7 @@ int main(int argc, char* argv[]) {
        MPIX_Get_property(comm_world, MPIDO_RECT_COMM, &rec_world);
 #endif
 
+    /*
     for (msg_size = message_min; msg_size < message_max + 1; msg_size *= msg_factor) {
         array = create_rand_elms(msg_size);
 
@@ -266,12 +267,15 @@ int main(int argc, char* argv[]) {
 
     MPI_Barrier(MPI_COMM_WORLD);
 
+   */
 
   //  void* handle = dlopen("/usr/local/lib/libmpi.dylib", RTLD_LAZY);
   //  void* func = dlsym(handle, "MPI_Bcast");
   //  typedef int (*MPIB_Bcast)(void* buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm);
 
-/*    MPIB_result result;
+    save_hmpi_optimal_groups(1024, MPI_CHAR, 0, MPI_COMM_WORLD, 1, 0, 0, op_bcast);
+
+    MPIB_result result;
     MPIB_precision precision;
     MPIB_getopt_precision_default(&precision);
     MPIB_coll_container* container = (MPIB_coll_container*)MPIB_Bcast_container_alloc(HMPI_Bcast);
@@ -279,7 +283,7 @@ int main(int argc, char* argv[]) {
     int M = 1024;
     double time_mpiblib = 0;
     if (rank == 0)
-    		MPIB_print_coll_th("MPI_HBcast", "MAX", 8, 0, precision); //TODO, 8
+    	MPIB_print_coll_th("MPI_HBcast", "MAX", num_proc, 0, precision);
     int start = MPI_Wtime();
     int err = MPIB_measure_max(container, MPI_COMM_WORLD, 0, M, precision, &result);
     time_mpiblib += MPI_Wtime() - start;
@@ -287,10 +291,9 @@ int main(int argc, char* argv[]) {
 		MPIB_print_coll_tr(result);
         fprintf(stdout, "Time: %le\n", time_mpiblib);
 	}
-*/
+
 
 	//int optimal_groups = get_hbcast_group(1024, MPI_CHAR, 0, MPI_COMM_WORLD, 1, 0); //TODO
- //   save_hmpi_optimal_groups(1024, MPI_CHAR, 0, MPI_COMM_WORLD, 1, 0, 0, op_reduce);
 
 
     /* Shut down MPI */

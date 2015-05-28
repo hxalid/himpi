@@ -83,7 +83,7 @@ void save_hmpi_optimal_groups(int count, MPI_Datatype datatype, int root,
 		fp = fopen(HMPI_CONF_FILE_NAME, "w"); //TODO:  should I overwrite?
 		fprintf(fp, "#num_procs\tnum_groups\tnum_levels\talg_in\talg_out\n");
 		if (fp == NULL) {
-			printf("Try to open the configuration file %s\n", HMPI_CONF_FILE_NAME);
+			fprintf(stdout, "Try to open the configuration file %s\n", HMPI_CONF_FILE_NAME);
 			perror("fopen");
 			MPI_Abort(MPI_COMM_WORLD, 201);
 		}

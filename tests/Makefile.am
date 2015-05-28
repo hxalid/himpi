@@ -4,9 +4,10 @@ bin_PROGRAMS = test_hbcast
 test_hbcast_SOURCES = \
     test_hbcast.c \
     mpi_bcast_algs.c \
-    mpi_bcast_algs.h 
+    mpi_bcast_algs.h
 nodist_EXTRA_test_hbcast_SOURCES = dummy.cpp
 
+python_PYTHON = hmpi_runner.py
     
 test_hbcast_LDADD = \
   $(top_builddir)/tools/libhpnla_tools.la \

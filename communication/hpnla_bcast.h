@@ -4,14 +4,14 @@
 #include <mpi.h>
 
 typedef enum hpnla_bcast_algo {
+  original,   //0
   lin,
   binary,
   flat,
   binomial,
-  original,   //4
   scatter_lr_allgather,
   scatter_rd_allgather,
-  binomial_mpich, //7,
+  binomial_mpich,
   pipelined_linear // 8
 } hpnla_bcast_algo;
 

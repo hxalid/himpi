@@ -118,7 +118,7 @@ void hpnla_bcast(void *buffer, int count, MPI_Datatype datatype,
       bcast_scatter_lr_allgather(buffer, count, datatype, root, comm);
       break;
     default:
-      fprintf(stderr, "algorithm unknow we used the MPI one\n");
+      fprintf(stderr, "Unknown algorithm, switching back to the MPI one\n");
       MPI_Bcast(buffer, count, datatype, root, comm);
       break;
   }

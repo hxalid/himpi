@@ -19,6 +19,9 @@ fi
 AC_PROG_LIBTOOL
 AC_PROG_INSTALL
 
+AM_PATH_PYTHON([2.7])
+
+
 
 AC_MSG_CHECKING([whether debug is enabled])
 AC_ARG_ENABLE([debug], [AC_HELP_STRING([--enable-debug], [Enable debug (default: disabled)])], [debug="yes"], [debug="no"])

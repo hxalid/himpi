@@ -13,9 +13,6 @@
 #endif
 
 
-//const char *HMPI_CONF_FILE_NAME = "fayil.conf";
-
-
 int hierarchical_broadcast(void *buffer, int count, MPI_Datatype datatype,
         int root, MPI_Comm comm, int num_groups, int num_levels, int alg_in, int alg_out) {
     int pg;
@@ -33,27 +30,28 @@ int hierarchical_broadcast(void *buffer, int count, MPI_Datatype datatype,
     
     if (comm_size == 1) return MPI_SUCCESS;
 
-    /*TODO make num_groups configurable*/
     if (comm_size > HBCAST_MIN_PROCS && validate_groups(num_groups, comm_size)) {
         pg = comm_size / num_groups;
         my_group = rank / pg;
         stride = root / pg;
 
         MPI_Comm_split(comm, (rank - my_group * pg == 0) ? 0 : MPI_UNDEFINED, rank, &out_group_comm);
-        //  MPI_Comm_split(comm_world, (rank - my_group * pg == stride) ? 0 : MPI_UNDEFINED, rank, &out_group_comm);
 
 #if(2 == DEBUG)
         MPIX_Get_property(in_group_comm, MPIDO_RECT_COMM, &(bcast_response.rec_in_group_comm));
 #endif
 
         /*
-         * Start broadcast between groups
+         * Start broadcasting between groups.
+         * If num_levels == -1 then broadcast only inside (just for debugging),
+         * else if num_levels is 1 then do hierarchical bcast,
+         * else broadcast only between groups (just for debugging).
          */
-        if (out_group_comm != MPI_COMM_NULL && num_levels != -1) { // if rec == -1 then broadcast only inside
+        if (out_group_comm != MPI_COMM_NULL && num_levels != -1) {
             int out_size = 0;
             int out_rank = -1;
-            root_outside = root; //  root / pg; 
-            hpnla_bcast(buffer, count, datatype, root_outside, out_group_comm, alg_out); //TODO
+            root_outside = root;
+            hpnla_bcast(buffer, count, datatype, root_outside, out_group_comm, alg_out);
 
 #if(2 == DEBUG)
             MPIX_Get_property(out_group_comm, MPIDO_RECT_COMM, &(bcast_response.rec_out_group_comm));
@@ -62,10 +60,10 @@ int hierarchical_broadcast(void *buffer, int count, MPI_Datatype datatype,
         }
 
         /*
-         * Start broadcast inside groups
+         * Start broadcasting inside groups
          */
         MPI_Comm_split(comm, my_group, rank, &in_group_comm);
-        root_inside = root; // root_inside = stride;
+        root_inside = root;
         switch (num_levels) {
             case 1: // 1 level of hierarchy
                 hpnla_bcast(buffer, count, datatype, root_inside, in_group_comm, alg_in);
@@ -90,17 +88,17 @@ int hierarchical_broadcast(void *buffer, int count, MPI_Datatype datatype,
 #endif
         
        // fprintf(stdout, "Using non-hierarchical bcast\n");
-        hpnla_bcast(buffer, count, datatype, root, comm, alg_in); //TODO: alg_in is default is there is no hierarchy
+    	//TODO: alg_in is default is there is no hierarchy
+        hpnla_bcast(buffer, count, datatype, root, comm, alg_in);
     } else if (!validate_groups(num_groups, comm_size)) {
         /*TODO*/
-       // fprintf(stdout, "Wrong number of groups\n");
+    	hpnla_bcast(buffer, count, datatype, root, comm, alg_in);
+        fprintf(stdout, "Wrong number of groups: switching back to MPI_bcast\n");
     }
 
     return MPI_SUCCESS;
-        
 }
 
-//TODO
 int HMPI_Bcast(void *buffer, int count, MPI_Datatype datatype,
         int root, MPI_Comm comm) {
 	hmpi_conf my_conf = hmpi_get_my_conf(comm, HMPI_CONF_FILE_NAME);
