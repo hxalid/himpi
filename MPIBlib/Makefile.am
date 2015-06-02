@@ -1,5 +1,5 @@
 #SUBDIRS = benchmarks p2p collectives tools tests 
-SUBDIRS = benchmarks p2p
+SUBDIRS = benchmarks
 
 include aminclude.am
 EXTRA_DIST = \

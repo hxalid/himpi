@@ -34,23 +34,25 @@ fi
 AC_CHECK_LIB([gslcblas], [main])
 AC_CHECK_LIB([gsl], [main], [], AC_MSG_ERROR([gsl is required but not found]))
 
-AC_ARG_WITH([boost_dir], [AC_HELP_STRING([--with-boost-dir=DIR], [The Boost C++ libraries directory (optional)])])
-if test "$with_boost_dir" != ""; then
-	CPPFLAGS="$CPPFLAGS -I$with_boost_dir/include"
-	LDFLAGS="$LDFLAGS -L$with_boost_dir/lib"
-fi
-AC_CHECK_LIB([boost_graph], [main], [], AC_MSG_ERROR([boost_graph is required but not found]))
+#AC_ARG_WITH([boost_dir], [AC_HELP_STRING([--with-boost-dir=DIR], [The Boost C++ libraries directory (optional)])])
+#if test "$with_boost_dir" != ""; then
+#	CPPFLAGS="$CPPFLAGS -I$with_boost_dir/include"
+#	LDFLAGS="$LDFLAGS -L$with_boost_dir/lib"
+#fi
+#AC_CHECK_LIB([boost_graph], [main], [], AC_MSG_ERROR([boost_graph is required but not found]))
 
 AC_CONFIG_FILES([
 	Makefile
-	p2p/Makefile
 	benchmarks/Makefile
 ])
 
 DX_PS_FEATURE([OFF])
 DX_INIT_DOXYGEN([MPIBlib])
-define([svn_revision], esyscmd([sh -c "svnversion -n"]))dnl
-DX_ENV_APPEND([SVN_REVISION], [svn_revision])
-DX_ENV_APPEND([PREDEFINED], [HAVE_LIBBOOST_GRAPH])
+
+#define([svn_revision], esyscmd([sh -c "svnversion -n"]))
+dnl
+#DX_ENV_APPEND([SVN_REVISION], [svn_revision])
+
+#DX_ENV_APPEND([PREDEFINED], [HAVE_LIBBOOST_GRAPH])
 
 AC_OUTPUT
