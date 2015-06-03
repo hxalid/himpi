@@ -17,8 +17,9 @@
 #define Bcast_TAG 904920477
 #define ERR_GROUPS -99
 
-#define HMPI_BCAST_ALG_IN 0
-#define HMPI_BCAST_ALG_OUT 0
+#define HMPI_ALG_IN 0
+#define HMPI_ALG_OUT 0
+#define HMPI_NUM_GROUPS 1
 #define HMPI_NUM_LEVELS 1
 #define HMPI_ROOT_PROC 0
 #define HMPI_MIN_PROCS 4
@@ -45,7 +46,7 @@ typedef struct hmpi_env {
 	int bcast_alg_out;
 	int num_levels;
 	int root;
-	int conf_file;
+	char* conf_file_name;
 	int generate_config;
 } hmpi_env;
 

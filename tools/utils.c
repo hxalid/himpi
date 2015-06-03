@@ -69,47 +69,58 @@ hmpi_conf* hmpi_get_conf_all(const char* filename, int* num_lines) {
 	return confs;
 }
 
+hmpi_conf default_config(int num_procs, int msg_size) {
+	hmpi_conf config;
+	config.num_procs=num_procs;
+	config.num_groups=HMPI_NUM_GROUPS;
+	config.num_levels=HMPI_NUM_LEVELS;
+	config.message_size=msg_size;
+	config.alg_in=HMPI_ALG_IN;
+	config.alg_out=HMPI_ALG_OUT;
+	return config;
+}
+
+hmpi_conf find_config(hmpi_conf* confs, int num_procs, int msg_size, int num_lines, int* config_found) {
+	hmpi_conf my_conf = default_config(num_procs, msg_size);
+
+	if (confs != NULL) {
+		int i;
+		for(i = 0; i < num_lines; i++){
+			if (confs[i].num_procs == num_procs && confs[i].message_size==msg_size) {
+				my_conf = confs[i];
+				*config_found = 1;
+				break;
+			}
+		}
+	}
+	return my_conf;
+}
+
 
 hmpi_conf hmpi_get_my_conf(MPI_Comm comm, int msg_size, int root, const char* filename, hmpi_operations operation) {
 	int num_lines;
 	hmpi_conf* confs = hmpi_get_conf_all(filename, &num_lines);
 
-	hmpi_conf my_conf;
 	int num_procs;
 	int my_rank;
 	MPI_Comm_size(comm, &num_procs);
 	MPI_Comm_rank(comm, &my_rank);
 
-	int i;
 	int config_found = 0;
-
-	my_conf.num_procs=num_procs;
-	my_conf.num_groups=1;
-	my_conf.num_levels=1;
-	my_conf.message_size=msg_size;
-	my_conf.alg_in=0;
-	my_conf.alg_out=0;
-
-	if (confs != NULL) {
-		for(i = 0; i < num_lines; i++){
-			if (confs[i].num_procs == num_procs && confs[i].message_size==msg_size) {
-				my_conf = confs[i];
-				config_found = 1;
-				break;
-			}
-		}
-	}
-
-	if (!config_found && !my_rank) {
-	   fprintf(stdout, "No config found. Using bcast. [p: %d, msg: %d]\n", num_procs, msg_size);
-	}
+	hmpi_conf my_conf = find_config(confs, num_procs, msg_size, num_lines, &config_found);
 
 	if (!config_found) {
 		save_hmpi_optimal_groups(msg_size, msg_size, henv.msg_stride,
 						root, comm, henv.num_levels, henv.bcast_alg_in,
 						henv.bcast_alg_out, op_bcast, 1); //TODO
 		MPI_Barrier(comm);
-		hmpi_get_my_conf(comm, msg_size, root, filename, operation);
+
+		confs = hmpi_get_conf_all(filename, &num_lines);
+		my_conf = find_config(confs, num_procs, msg_size, num_lines, &config_found);
+	}
+
+	if (!config_found && !my_rank) {
+	   fprintf(stdout, "No config found. Using bcast. [p: %d, msg: %d]\n", num_procs, msg_size);
 	}
 
 	return my_conf;

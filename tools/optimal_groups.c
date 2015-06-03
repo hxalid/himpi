@@ -76,7 +76,7 @@ void save_hmpi_optimal_groups(int min_msg_size, int max_msg_size, int msg_stride
 	MPI_Comm_size(comm_world, &comm_size);
 
 	FILE* fp;
-	if (rank == 0) {
+//	if (rank == 0) {
 		//TODO: configurable filename
 		fp = fopen(HMPI_CONF_FILE_NAME, "w"); //TODO:  should I overwrite?
 		fprintf(fp, "#num_procs\tnum_groups\tnum_levels\tmsg_size\talg_in\talg_out\n");
@@ -85,7 +85,7 @@ void save_hmpi_optimal_groups(int min_msg_size, int max_msg_size, int msg_stride
 			perror("fopen");
 			MPI_Abort(MPI_COMM_WORLD, 201);
 		}
-	}
+//	}
 
 	/*
 	 * Find optimal number of groups for p\in[HMPI_MIN_PROCS+1, comm_size]
@@ -108,7 +108,7 @@ void save_hmpi_optimal_groups(int min_msg_size, int max_msg_size, int msg_stride
 				int group = get_hmpi_group(msg, root, sub_comm,
 						num_levels, alg_in, alg_out, op_id);
 				if (group != -1) {
-					if (rank == 0)
+					//if (rank == 0)
 						fprintf(fp, "%d\t%d\t%d\t%d\t%d\t%d\n", new_size, group, 1, msg, 0, 0);
 				}
 			}
@@ -117,7 +117,7 @@ void save_hmpi_optimal_groups(int min_msg_size, int max_msg_size, int msg_stride
 		}
 	}
 
-	if (rank == 0)
+//	if (rank == 0)
 		fclose(fp);
 
 }
