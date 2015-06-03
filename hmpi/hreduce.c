@@ -38,7 +38,7 @@ int hierarchical_reduce(void *snd_buffer, void* rcv_buffer, int count, MPI_Datat
 
 
     /*TODO make num_groups configurable*/
-    if (size > HREDUCE_MIN_PROCS && ( num_groups > 1 && num_groups < size ) ) {
+    if (size > HMPI_MIN_PROCS && ( num_groups > 1 && num_groups < size ) ) {
         pg = size / num_groups;
         my_group = rank / pg;
         //stride = root / pg;
@@ -83,7 +83,7 @@ int hierarchical_reduce(void *snd_buffer, void* rcv_buffer, int count, MPI_Datat
             MPI_Comm_free(&out_group_comm);
         if (in_group_comm != MPI_COMM_NULL)
             MPI_Comm_free(&in_group_comm);
-    } else if (size <= HREDUCE_MIN_PROCS || ( num_groups == 1 || num_groups == size) ) {
+    } else if (size <= HMPI_MIN_PROCS || ( num_groups == 1 || num_groups == size) ) {
         //fprintf(stdout, "Using non-hierarchical reduce\n");
         err = MPI_Reduce(snd_buffer, rcv_buffer, count, datatype, op, root, comm_world);
     } else {

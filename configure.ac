@@ -19,8 +19,8 @@ fi
 AC_PROG_LIBTOOL
 AC_PROG_INSTALL
 
+# Used to install python scripts with the specified python version
 AM_PATH_PYTHON([2.7])
-
 
 
 AC_MSG_CHECKING([whether debug is enabled])
@@ -44,6 +44,13 @@ if test "$with_group_conf" != ""; then
 	fi
 fi
 
+
+AC_MSG_CHECKING([Enable config generation])
+AC_ARG_ENABLE([config_generation], [AC_HELP_STRING([--enable-config-generation], [Enable config-generation (default: disabled)])], [config_generation="yes"], [config_generation="no"])
+if test "$config-generation" = "yes"; then
+	AC_DEFINE([HMPI_GENERATE_CONFIG], [1], [Config generation enabled])
+fi
+AC_MSG_RESULT([$config_generation])
 
 
 AC_OPENMP
@@ -173,8 +180,10 @@ AC_CONFIG_SUBDIRS([MPIBlib])
 
 DX_PS_FEATURE([OFF])
 DX_INIT_DOXYGEN(hmpi)
-define([svn_revision], esyscmd([sh -c "svnversion -n"]))dnl
-DX_ENV_APPEND(SVN_REVISION, [svn_revision])
+
+#define([svn_revision], esyscmd([sh -c "svnversion -n"]))
+dnl
+#DX_ENV_APPEND(SVN_REVISION, [svn_revision])
 
 
 

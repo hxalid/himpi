@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 
+
 int get_hmpi_group(int msg_size, int root,
 		MPI_Comm comm_world, int num_levels, int alg_in, int alg_out,
 		hmpi_operations op_id) {
@@ -65,9 +66,9 @@ int get_hmpi_group(int msg_size, int root,
  * Calculate optimal number of groups for all number of processes
  * from HBCAST_MIN_PROCS up to comm_size and save it into a config file.
  */
-void save_hmpi_optimal_groups(int msg_size, int root,
-		MPI_Comm comm_world, int num_levels, int alg_in, int alg_out, hmpi_operations op_id) {
-	int g;
+void save_hmpi_optimal_groups(int min_msg_size, int max_msg_size, int msg_stride, int root,
+		MPI_Comm comm_world, int num_levels, int alg_in, int alg_out, hmpi_operations op_id, int use_one_proc) {
+	int p;
 	int rank;
 	int comm_size;
 	int new_size;
@@ -86,18 +87,31 @@ void save_hmpi_optimal_groups(int msg_size, int root,
 		}
 	}
 
-	for (g = 0; g < comm_size - HBCAST_MIN_PROCS; g++) {
+
+	/*
+	 * Find optimal number of groups for p\in[HMPI_MIN_PROCS+1, comm_size]
+	 */
+	int p_end = comm_size - HMPI_MIN_PROCS;
+	if (use_one_proc) {
+		p_end = 1;
+	}
+	for (p = 0; p < p_end; p++) {
 		MPI_Comm sub_comm;
-		MPI_Comm_split(comm_world, (comm_size - rank > g) ? 0 : MPI_UNDEFINED,
+		MPI_Comm_split(comm_world, (comm_size - rank > p) ? 0 : MPI_UNDEFINED,
 				rank, &sub_comm);
 		if (sub_comm != MPI_COMM_NULL) {
 			MPI_Comm_size(sub_comm, &new_size);
 
-			int group = get_hmpi_group(msg_size, root, sub_comm,
-					num_levels, alg_in, alg_out, op_id);
-			if (group != -1) {
-				if (rank == 0)
-					fprintf(fp, "%d\t%d\t%d\t%d\t%d\t%d\n", new_size, group, 1, msg_size, 0, 0);
+			int msg = 0;
+			for(msg = min_msg_size; msg<=max_msg_size; msg*=msg_stride) {
+
+				int group = get_hmpi_group(msg, root, sub_comm,
+						num_levels, alg_in, alg_out, op_id);
+				if (group != -1) {
+					if (rank == 0)
+						fprintf(fp, "%d\t%d\t%d\t%d\t%d\t%d\n", new_size, group, 1, msg, 0, 0);
+				}
+
 			}
 
 			MPI_Comm_free(&sub_comm);

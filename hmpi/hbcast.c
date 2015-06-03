@@ -30,7 +30,7 @@ int hierarchical_broadcast(void *buffer, int count, MPI_Datatype datatype,
     
     if (comm_size == 1) return MPI_SUCCESS;
 
-    if (comm_size > HBCAST_MIN_PROCS && validate_groups(num_groups, comm_size)) {
+    if (comm_size > HMPI_MIN_PROCS && validate_groups(num_groups, comm_size)) {
         pg = comm_size / num_groups;
         my_group = rank / pg;
         stride = root / pg;
@@ -81,7 +81,7 @@ int hierarchical_broadcast(void *buffer, int count, MPI_Datatype datatype,
             MPI_Comm_free(&out_group_comm);
         if (in_group_comm != MPI_COMM_NULL)
             MPI_Comm_free(&in_group_comm);
-    } else if (comm_size <= HBCAST_MIN_PROCS || validate_groups(num_groups, comm_size)) {
+    } else if (comm_size <= HMPI_MIN_PROCS || validate_groups(num_groups, comm_size)) {
 
 #if(2 == DEBUG)
     	MPIX_Get_property(comm, MPIDO_RECT_COMM, &(bcast_response.rec_comm_world));
@@ -93,7 +93,8 @@ int hierarchical_broadcast(void *buffer, int count, MPI_Datatype datatype,
     } else if (!validate_groups(num_groups, comm_size)) {
         /*TODO*/
     	hpnla_bcast(buffer, count, datatype, root, comm, alg_in);
-        fprintf(stdout, "Wrong number of groups: switching back to MPI_bcast: %d\n", num_groups);
+    	if (!rank)
+    		fprintf(stdout, "Wrong number of groups: switching back to MPI_bcast: %d\n", num_groups);
     }
 
     return MPI_SUCCESS;

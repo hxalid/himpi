@@ -75,23 +75,12 @@ hmpi_conf hmpi_get_my_conf(MPI_Comm comm, int msg_size, int root, const char* fi
 	//get number of groups per process.
 	int num_lines;
 	hmpi_conf* confs = hmpi_get_conf_all(filename, &num_lines);
-	if (confs == NULL) {
-		fprintf(stdout, "No config found. Generating config file\n");
-		/*
-		 * TODO:
-		 * at the moment we use only one level of hierarchy,
-		 * use algs 0 to ignore selection from our implementations.
-		 */
-		save_hmpi_optimal_groups(msg_size, root, comm, 1, 0, 0, operation);
-		MPI_Barrier(comm);
-		confs = hmpi_get_conf_all(filename, &num_lines);
-		printf("confs[0].message_size=%d, confs[0].num_groups=%d\n", confs[0].message_size, confs[0].num_groups);
-	}
-
 
 	hmpi_conf my_conf;
 	int num_procs;
+	int my_rank;
 	MPI_Comm_size(comm, &num_procs);
+	MPI_Comm_rank(comm, &my_rank);
 
 	int i;
 	int config_found = 0;
@@ -103,7 +92,6 @@ hmpi_conf hmpi_get_my_conf(MPI_Comm comm, int msg_size, int root, const char* fi
 	my_conf.alg_in=0;
 	my_conf.alg_out=0;
 
-	//TODO
 	if (confs != NULL) {
 		for(i = 0; i < num_lines; i++){
 			if (confs[i].num_procs == num_procs && confs[i].message_size==msg_size) {
@@ -114,8 +102,8 @@ hmpi_conf hmpi_get_my_conf(MPI_Comm comm, int msg_size, int root, const char* fi
 		}
 	}
 
-	if (!config_found) {
-	   fprintf(stdout, "No config found.\n");
+	if (!config_found && !my_rank) {
+	   fprintf(stdout, "No config found. Using bcast. [p: %d, msg: %d]\n", num_procs, msg_size);
 	}
 
 	return my_conf;

@@ -17,13 +17,41 @@
 #define Bcast_TAG 904920477
 #define ERR_GROUPS -99
 
+#define HMPI_BCAST_ALG_IN 0
+#define HMPI_BCAST_ALG_OUT 0
+#define HMPI_NUM_LEVELS 1
+#define HMPI_ROOT_PROC 0
+#define HMPI_MIN_PROCS 4
+#define HMPI_MIN_MSG 1024	   // 1Kb
+#define HMPI_MAX_MSG 16777216  // 16Mb
+#define HMPI_MSG_STRIDE 2
+#define HMPI_CONF_FILE "./default_file.conf"
+#define HMPI_GENERATE_CONFIG 0
 
-#define HBCAST_MIN_PROCS 4
-#define HREDUCE_MIN_PROCS 4
-#define HMPI_DEFAULT_CONF_FILE "./default_file.conf"
 
-//extern int num_groups;
+typedef enum hmpi_operations {
+   op_bcast,
+   op_reduce
+} hmpi_operations;
+
+
+
+typedef struct hmpi_env {
+	int min_msg;
+	int max_msg;
+	int msg_stride;
+	int min_procs;
+	int bcast_alg_in;
+	int bcast_alg_out;
+	int num_levels;
+	int root;
+	int conf_file;
+	int generate_config;
+} hmpi_env;
+
+
 extern const char *HMPI_CONF_FILE_NAME;
+extern hmpi_env henv;
 
 int validate_input(int num_groups, int num_procs);
 

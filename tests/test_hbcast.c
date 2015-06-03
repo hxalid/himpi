@@ -122,7 +122,6 @@ int main(int argc, char* argv[]) {
         }
     }
 
-
     if ((use_any_root && (root < 0 || root > num_proc)) || (!use_any_root && root)) {
         if (!rank)
             fprintf(stdout, "Wrong root\n");

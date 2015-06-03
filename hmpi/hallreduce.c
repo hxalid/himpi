@@ -4,6 +4,7 @@
  *  Created on: 26 Mar 2015
  *      Author: Khalid Hasanov
  */
+#include <stdlib.h>
 
 #include "hmpi.h"
 
@@ -27,7 +28,7 @@ int HMPI_Allreduce(void *snd_buffer, void* rcv_buffer, int count,
 		return MPI_SUCCESS;
 
 	/*TODO make num_groups configurable*/
-	if (size > HREDUCE_MIN_PROCS && (num_groups > 1 && num_groups < size)) {
+	if (size > HMPI_MIN_PROCS && (num_groups > 1 && num_groups < size)) {
 		pg = size / num_groups;
 		my_group = rank / pg;
 
@@ -74,7 +75,7 @@ int HMPI_Allreduce(void *snd_buffer, void* rcv_buffer, int count,
 			MPI_Comm_free(&out_group_comm);
 		if (in_group_comm != MPI_COMM_NULL)
 			MPI_Comm_free(&in_group_comm);
-	} else if (size <= HREDUCE_MIN_PROCS || (num_groups == 1 || num_groups == size)) {
+	} else if (size <= HMPI_MIN_PROCS || (num_groups == 1 || num_groups == size)) {
 		//  fprintf(stdout, "Using non-hierarchical reduce: [p=%d, g=%d]\n", size, num_groups);
 		MPI_Allreduce(snd_buffer, rcv_buffer, count, datatype, op, comm_world);
 	} else {

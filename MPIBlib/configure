@@ -818,7 +818,6 @@ with_sysroot
 enable_libtool_lock
 enable_debug
 with_gsl_dir
-with_boost_dir
 enable_doxygen_doc
 enable_doxygen_dot
 enable_doxygen_man
@@ -1499,7 +1498,6 @@ Optional Packages:
   --with-sysroot[=DIR]    Search for dependent libraries within DIR (or the
                           compiler's sysroot if not specified).
   --with-gsl-dir=DIR      GNU Scientific Library directory
-  --with-boost-dir=DIR    The Boost C++ libraries directory (optional)
 
 Some influential environment variables:
   CC          C compiler command
@@ -15816,59 +15814,14 @@ else
 fi
 
 
+#AC_ARG_WITH([boost_dir], [AC_HELP_STRING([--with-boost-dir=DIR], [The Boost C++ libraries directory (optional)])])
+#if test "$with_boost_dir" != ""; then
+#	CPPFLAGS="$CPPFLAGS -I$with_boost_dir/include"
+#	LDFLAGS="$LDFLAGS -L$with_boost_dir/lib"
+#fi
+#AC_CHECK_LIB([boost_graph], [main], [], AC_MSG_ERROR([boost_graph is required but not found]))
 
-# Check whether --with-boost_dir was given.
-if test "${with_boost_dir+set}" = set; then :
-  withval=$with_boost_dir;
-fi
-
-if test "$with_boost_dir" != ""; then
-	CPPFLAGS="$CPPFLAGS -I$with_boost_dir/include"
-	LDFLAGS="$LDFLAGS -L$with_boost_dir/lib"
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for main in -lboost_graph" >&5
-$as_echo_n "checking for main in -lboost_graph... " >&6; }
-if ${ac_cv_lib_boost_graph_main+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lboost_graph  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-
-int
-main ()
-{
-return main ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_boost_graph_main=yes
-else
-  ac_cv_lib_boost_graph_main=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_boost_graph_main" >&5
-$as_echo "$ac_cv_lib_boost_graph_main" >&6; }
-if test "x$ac_cv_lib_boost_graph_main" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBBOOST_GRAPH 1
-_ACEOF
-
-  LIBS="-lboost_graph $LIBS"
-
-else
-  as_fn_error $? "boost_graph is required but not found" "$LINENO" 5
-fi
-
-
-ac_config_files="$ac_config_files Makefile p2p/Makefile benchmarks/Makefile"
+ac_config_files="$ac_config_files Makefile benchmarks/Makefile"
 
 
 
@@ -17895,10 +17848,11 @@ esac
 #echo DX_FLAG_ps=$DX_FLAG_ps
 #echo DX_ENV=$DX_ENV
 
-DX_ENV="$DX_ENV SVN_REVISION='Unversioned directory'"
 
-DX_ENV="$DX_ENV PREDEFINED='HAVE_LIBBOOST_GRAPH'"
+#define([svn_revision], esyscmd([sh -c "svnversion -n"]))
+#DX_ENV_APPEND([SVN_REVISION], [svn_revision])
 
+#DX_ENV_APPEND([PREDEFINED], [HAVE_LIBBOOST_GRAPH])
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -19102,7 +19056,6 @@ do
     "depfiles") CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
-    "p2p/Makefile") CONFIG_FILES="$CONFIG_FILES p2p/Makefile" ;;
     "benchmarks/Makefile") CONFIG_FILES="$CONFIG_FILES benchmarks/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
