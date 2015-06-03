@@ -49,9 +49,16 @@ typedef struct hmpi_env {
 	int generate_config;
 } hmpi_env;
 
+typedef struct hmpi_group_data{
+	int num_procs;
+	int num_groups;
+	int msg_size;
+} hmpi_group_data;
+
 
 extern const char *HMPI_CONF_FILE_NAME;
 extern hmpi_env henv;
+extern hmpi_group_data* group_data;
 
 int validate_input(int num_groups, int num_procs);
 

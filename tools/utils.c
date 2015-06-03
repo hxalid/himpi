@@ -70,9 +70,7 @@ hmpi_conf* hmpi_get_conf_all(const char* filename, int* num_lines) {
 }
 
 
-
 hmpi_conf hmpi_get_my_conf(MPI_Comm comm, int msg_size, int root, const char* filename, hmpi_operations operation) {
-	//get number of groups per process.
 	int num_lines;
 	hmpi_conf* confs = hmpi_get_conf_all(filename, &num_lines);
 
@@ -104,6 +102,14 @@ hmpi_conf hmpi_get_my_conf(MPI_Comm comm, int msg_size, int root, const char* fi
 
 	if (!config_found && !my_rank) {
 	   fprintf(stdout, "No config found. Using bcast. [p: %d, msg: %d]\n", num_procs, msg_size);
+	}
+
+	if (!config_found) {
+		save_hmpi_optimal_groups(msg_size, msg_size, henv.msg_stride,
+						root, comm, henv.num_levels, henv.bcast_alg_in,
+						henv.bcast_alg_out, op_bcast, 1); //TODO
+		MPI_Barrier(comm);
+		hmpi_get_my_conf(comm, msg_size, root, filename, operation);
 	}
 
 	return my_conf;

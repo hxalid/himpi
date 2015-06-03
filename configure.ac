@@ -165,7 +165,6 @@ mkl)
 esac
 
 
-
 AC_CONFIG_FILES([
 	Makefile
     hpnla/Makefile
