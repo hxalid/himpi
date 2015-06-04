@@ -8,8 +8,8 @@ include_HEADERS = \
         utils.h \
         optimal_groups.h
 
-noinst_LTLIBRARIES = libhpnla_tools.la
-libhpnla_tools_la_SOURCES = \
+noinst_LTLIBRARIES = libhmpi_tools.la
+libhmpi_tools_la_SOURCES = \
         hpnla_conf.c \
         hpnla_bind.c \
         hpnla_timer.c \

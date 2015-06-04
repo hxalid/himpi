@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 #include "hmpi.h"
-#include "tools/utils.h"
+#include "../tools/utils.h"
 #include "communication/hpnla_bcast.h"
 
 #ifdef MPIX_H

@@ -10,6 +10,6 @@ nodist_EXTRA_test_hbcast_SOURCES = dummy.cpp
 python_PYTHON = hmpi_runner.py
     
 test_hbcast_LDADD = \
-  $(top_builddir)/tools/libhpnla_tools.la \
+  $(top_builddir)/tools/libhmpi_tools.la \
   $(top_builddir)/hmpi/libhmpi.la \
   $(top_builddir)/MPIBlib/benchmarks/libmpib.la

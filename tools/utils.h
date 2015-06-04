@@ -10,18 +10,6 @@
 #include "optimal_groups.h"
 
 
-/*! hmpi configuration parameters */
-typedef struct hmpi_conf {
-	int num_procs;
-	int num_groups;
-	int num_levels;
-	int message_size;
-	int alg_in;
-	int alg_out;
-} hmpi_conf;
-
-
-
 int validate_groups(int num_groups, int num_procs);
 
 char *create_rand_elms(int num_elements);

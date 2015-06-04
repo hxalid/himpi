@@ -7,6 +7,7 @@
 
 #include <stdlib.h>
 #include "hmpi.h"
+#include "tools/optimal_groups.h"
 
 const char *HMPI_CONF_FILE_NAME;
 hmpi_env henv;

@@ -167,11 +167,11 @@ esac
 
 AC_CONFIG_FILES([
 	Makefile
+	tools/Makefile
+	communication/Makefile
+	cblas_wrappers/Makefile
     hpnla/Makefile
 	hmpi/Makefile
-	cblas_wrappers/Makefile
-	communication/Makefile
-	tools/Makefile
 	tests/Makefile
 ])
 

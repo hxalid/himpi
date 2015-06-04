@@ -112,7 +112,7 @@ hmpi_conf hmpi_get_my_conf(MPI_Comm comm, int msg_size, int root, const char* fi
 	if (!config_found) {
 		save_hmpi_optimal_groups(msg_size, msg_size, henv.msg_stride,
 						root, comm, henv.num_levels, henv.bcast_alg_in,
-						henv.bcast_alg_out, op_bcast, 1); //TODO
+						henv.bcast_alg_out, operation, 1); //TODO
 		MPI_Barrier(comm);
 
 		confs = hmpi_get_conf_all(filename, &num_lines);

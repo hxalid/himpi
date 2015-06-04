@@ -10,6 +10,7 @@
 
 #include <mpi.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "config.h"
 
@@ -28,14 +29,24 @@
 #define HMPI_MSG_STRIDE 2
 #define HMPI_CONF_FILE "./default_file.conf"
 #define HMPI_GENERATE_CONFIG 0
-
+#define _unused(x) ((void)x)
 
 typedef enum hmpi_operations {
    op_bcast,
-   op_reduce
+   op_reduce,
+   op_scatter,
+   op_gather
 } hmpi_operations;
 
-
+/*! hmpi configuration parameters */
+typedef struct hmpi_conf {
+	int num_procs;
+	int num_groups;
+	int num_levels;
+	int message_size;
+	int alg_in;
+	int alg_out;
+} hmpi_conf;
 
 typedef struct hmpi_env {
 	int min_msg;
@@ -69,12 +80,30 @@ int hierarchical_broadcast(void *buffer, int count, MPI_Datatype datatype,
 int hierarchical_reduce(void *snd_buffer, void* rcv_buffer, int count, MPI_Datatype datatype, MPI_Op op,
         int root, MPI_Comm comm_world, int num_groups, int num_levels, int alg_in, int alg_out);
 
+int hierarchical_gather(void *sendbuf, int sendcnt, MPI_Datatype sendtype,
+		void *recvbuf, int recvcnt, MPI_Datatype recvtype, int root,
+		MPI_Comm comm, int num_groups, int num_levels, int alg_in, int alg_out);
+
+int hierarchical_scatter(void *sendbuf, int sendcnt, MPI_Datatype sendtype,
+		void *recvbuf, int recvcnt, MPI_Datatype recvtype, int root,
+		MPI_Comm comm, int num_groups, int num_levels, int alg_in, int alg_out);
+
+
 int HMPI_Bcast(void *buffer, int count, MPI_Datatype datatype,
         int root, MPI_Comm comm_world);
 
 
 int HMPI_Reduce(void *snd_buffer, void* rcv_buffer, int count, MPI_Datatype datatype, MPI_Op op,
         int root, MPI_Comm comm);
+
+int HMPI_Scatter(void *sendbuf, int sendcnt, MPI_Datatype sendtype,
+		void *recvbuf, int recvcnt, MPI_Datatype recvtype, int root,
+		MPI_Comm comm);
+
+int HMPI_Gather(void *sendbuf, int sendcnt, MPI_Datatype sendtype,
+		void *recvbuf, int recvcnt, MPI_Datatype recvtype, int root,
+		MPI_Comm comm);
+
 
 int HMPI_Init( int *argc, char ***argv );
 

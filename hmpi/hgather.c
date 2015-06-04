@@ -6,12 +6,16 @@
  */
 
 #include "hmpi.h"
+#include "tools/utils.h"
 
-static const char HMPI_FUNC_NAME[] = "MPI_HGather";
 
-int HMPI_Gather(void *sendbuf, int sendcnt, MPI_Datatype sendtype,
+int hierarchical_gather(void *sendbuf, int sendcnt, MPI_Datatype sendtype,
 		void *recvbuf, int recvcnt, MPI_Datatype recvtype, int root,
-		MPI_Comm comm, int num_groups) {
+		MPI_Comm comm, int num_groups, int num_levels, int alg_in, int alg_out) {
+	_unused(num_levels);
+	_unused(alg_in);
+	_unused(alg_out);
+
 	int res = MPI_SUCCESS;
 
 	if (num_groups == 1) {
@@ -40,7 +44,8 @@ int HMPI_Gather(void *sendbuf, int sendcnt, MPI_Datatype sendtype,
 		/* Gather inside groups */
 		MPI_Comm_split(comm, my_group, rank, &in_group_comm);
 		if (in_group_comm != MPI_COMM_NULL) {
-			res = MPI_Gather(sendbuf, recvcnt, sendtype, g_rcvbuf, recvcnt,	sendtype, root, in_group_comm);
+			res = MPI_Gather(sendbuf, recvcnt, sendtype, g_rcvbuf, recvcnt,
+					sendtype, root, in_group_comm);
 			MPI_Comm_free(&in_group_comm);
 		}
 
@@ -53,7 +58,8 @@ int HMPI_Gather(void *sendbuf, int sendcnt, MPI_Datatype sendtype,
 		MPI_Comm_split(comm, (rank - my_group * pg == 0) ? 0 : MPI_UNDEFINED,
 				rank, &out_group_comm);
 		if (out_group_comm != MPI_COMM_NULL) {
-			res = MPI_Gather(g_rcvbuf, pg * recvcnt, sendtype, recvbuf,	pg * recvcnt, sendtype, root, out_group_comm);
+			res = MPI_Gather(g_rcvbuf, pg * recvcnt, sendtype, recvbuf,
+					pg * recvcnt, sendtype, root, out_group_comm);
 			MPI_Comm_free(&out_group_comm);
 		}
 
@@ -61,5 +67,20 @@ int HMPI_Gather(void *sendbuf, int sendcnt, MPI_Datatype sendtype,
 	}
 
 	return res;
+}
+
+int HMPI_Gather(void *sendbuf, int sendcnt, MPI_Datatype sendtype,
+		void *recvbuf, int recvcnt, MPI_Datatype recvtype, int root,
+		MPI_Comm comm) {
+	MPI_Aint extent, lb;
+	MPI_Type_get_extent(sendtype, &lb, &extent);
+	int msg_size = extent * sendcnt;
+
+	hmpi_conf my_conf = hmpi_get_my_conf(comm, msg_size, root,
+			HMPI_CONF_FILE_NAME, op_gather);
+
+	return hierarchical_gather(sendbuf, sendcnt, sendtype, recvbuf, recvcnt,
+			recvtype, root, comm, my_conf.num_groups, my_conf.num_levels,
+			my_conf.alg_in, my_conf.alg_out);
 }
 

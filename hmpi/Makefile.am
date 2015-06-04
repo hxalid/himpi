@@ -9,6 +9,9 @@ libhmpi_la_SOURCES = \
 		hmpi_finalize.c \
 		hallreduce.c \
         hbcast.c \
-        hgather.c \
         hreduce.c \
-        hscatter.c
+        hgather.c \
+        hscatter.c 
+        
+libhmpi_la_LIBADD = \
+  $(top_builddir)/tools/libhmpi_tools.la
