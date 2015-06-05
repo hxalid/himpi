@@ -1,3 +1,11 @@
+/*
+ * Example run on Grid5000:
+ * mpirun -n 16 -hostfile hostlarim-graphene-p16  --mca btl_tcp_if_exclude eth0  --mca btl openib,sm,self
+ * --mca pml ^cm  --mca plm_rsh_agent "ssh -q -o StrictHostKeyChecking=no"  -x HMPI_CONF_FILE
+ * --map-by node test_hbcast -i 1 -m 128 -M 128
+ *
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -145,7 +153,7 @@ int main(int argc, char* argv[]) {
        MPIX_Get_property(comm_world, MPIDO_RECT_COMM, &rec_world);
 #endif
 
-    /*
+
     for (msg_size = message_min; msg_size < message_max + 1; msg_size *= msg_factor) {
         array = create_rand_elms(msg_size);
 
@@ -189,10 +197,9 @@ int main(int argc, char* argv[]) {
 			MPI_Reduce(&elapsed_time, &max_time, 1, MPI_DOUBLE, MPI_MAX, root, MPI_COMM_WORLD);
 
 			if (rank == root) {
-				fprintf(stdout, "HMPI_Bcast: %d %d %d %f %f %d %d %d\n",
+				fprintf(stdout, "HMPI_Bcast: %d %d %f %f %d %d %d\n",
 						root,
 						num_proc,
-						hmpi_get_my_conf(MPI_COMM_WORLD, "fayil.conf").num_groups,
 						msg_size * sizeof (char) / 1024.,
 						max_time,
 						rec,
@@ -210,7 +217,7 @@ int main(int argc, char* argv[]) {
         MPI_Comm in_group_comm, out_group_comm;
         double max_time_out, max_time_in;
 
-        if (num_proc > HBCAST_MIN_PROCS) {
+        if (num_proc > HMPI_MIN_PROCS) {
             if (rank == root)
                 fprintf(stdout, "SPLIT. root p g max_time_in max_time_out rec reps\n");
 
@@ -266,18 +273,17 @@ int main(int argc, char* argv[]) {
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-   */
+
 
   //  void* handle = dlopen("/usr/local/lib/libmpi.dylib", RTLD_LAZY);
   //  void* func = dlsym(handle, "MPI_Bcast");
   //  typedef int (*MPIB_Bcast)(void* buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm);
 
-  //  save_hmpi_optimal_groups(1024, 0, MPI_COMM_WORLD, 1, 0, 0, op_bcast);
 
-    MPIB_result result;
+ /*   MPIB_result result;
     MPIB_precision precision;
     MPIB_getopt_precision_default(&precision);
-    MPIB_coll_container* container = (MPIB_coll_container*)MPIB_Bcast_container_alloc(HMPI_Bcast);
+    MPIB_coll_container* container = (MPIB_coll_container*)MPIB_HBcast_container_alloc(HMPI_Bcast, );
 
     int M = 1024;
     double time_mpiblib = 0;
@@ -291,9 +297,7 @@ int main(int argc, char* argv[]) {
         fprintf(stdout, "Time: %le\n", time_mpiblib);
 	}
 
-
-	//int optimal_groups = get_hbcast_group(1024, MPI_CHAR, 0, MPI_COMM_WORLD, 1, 0); //TODO
-
+*/
 
     /* Shut down MPI */
     HMPI_Finalize();

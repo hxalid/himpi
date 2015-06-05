@@ -329,7 +329,7 @@ public:
 		MPIB_coll_container::initialize = initialize;
 		MPIB_coll_container::execute = execute;
 		this->hbcast = hbcast;
-		this->num_groups = num_groups + 1;
+		this->num_groups = num_groups; //TODO: check +1
 		this->num_levels = num_levels;
 		this->alg_in = alg_in;
 		this->alg_out = alg_out;
@@ -367,7 +367,7 @@ public:
 		MPIB_coll_container::execute = execute;
 		MPIB_coll_container::finalize = finalize;
 		this->hreduce = hreduce;
-		this->num_groups = num_groups + 1;
+		this->num_groups = num_groups; //TODO
 		this->num_levels = num_levels;
 		this->alg_in = alg_in;
 		this->alg_out = alg_out;
@@ -413,7 +413,7 @@ public:
 		MPIB_coll_container::initialize = initialize;
 		MPIB_coll_container::execute = execute;
 		this->hscatter = hscatter;
-		this->num_groups = num_groups + 1; // add 1 as group ids start from 0
+		this->num_groups = num_groups; // check if I need to add 1
 		this->num_levels = num_levels;
 		this->alg_in = alg_in;
 		this->alg_out = alg_out;
@@ -445,7 +445,7 @@ public:
 		MPIB_coll_container::initialize = initialize;
 		MPIB_coll_container::execute = execute;
 		this->hgather = hgather;
-		this->num_groups = num_groups + 1; // add 1 as group ids start from 0
+		this->num_groups = num_groups; //TODO: check if I need +1
 		this->num_levels = num_levels;
 		this->alg_in = alg_in;
 		this->alg_out = alg_out;

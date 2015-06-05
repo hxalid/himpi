@@ -9,6 +9,7 @@
 #include "MPIBlib/benchmarks/mpib.h"
 
 #include <stdlib.h>
+#include <math.h>
 
 hmpi_group_data* group_data;
 
@@ -28,6 +29,8 @@ int get_hmpi_group(int msg_size, int root, MPI_Comm comm_world, int num_levels,
 		if (num_procs % g == 0)
 			num_groups++;
 	}
+
+	if (my_rank==0) printf("num_procs=%d, num_groups=%d\n", num_procs, num_groups);
 
 	double* g_times = (double*) calloc(num_groups, sizeof(double));
 	if (g_times == NULL) {
@@ -63,17 +66,16 @@ int get_hmpi_group(int msg_size, int root, MPI_Comm comm_world, int num_levels,
 				break;
 			}
 
-			int err = MPIB_measure_max(container, comm_world, 0, msg_size,
+			int err = MPIB_measure_max(container, comm_world, root, msg_size,
 					precision, &result);
 			g_times[i++] = result.T;
 		}
 	}
 
-	//TODO
-	int group = gsl_stats_min_index(g_times, 1, num_groups);
+	int group = (int)pow(2, gsl_stats_min_index(g_times, 1, num_groups));
 	free(g_times);
 
-	return group + 1;
+	return group;
 }
 
 /*

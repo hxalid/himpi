@@ -71,6 +71,19 @@ int HMPI_Init(int *argc, char ***argv) {
 	int comm_size;
 	MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
 
+	int rank;
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+	//TODO: this part should be enable/disable by some debug level
+	char processor_name[MPI_MAX_PROCESSOR_NAME];
+	int name_len;
+	MPI_Get_processor_name(processor_name, &name_len);
+
+	fprintf(stdout, "[%d, %s] -> fayil=%s\n", rank, processor_name, HMPI_CONF_FILE_NAME);
+
+	//
+
+
 	int should_generate_config = 0;
 #ifdef HMPI_GENERATE_CONFIG
 	should_generate_config = 1;
