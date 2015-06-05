@@ -1,4 +1,4 @@
-/*
+/*!
  * Example run on Grid5000:
  * mpirun -n 16 -hostfile hostlarim-graphene-p16  --mca btl_tcp_if_exclude eth0  --mca btl openib,sm,self
  * --mca pml ^cm  --mca plm_rsh_agent "ssh -q -o StrictHostKeyChecking=no"  -x HMPI_CONF_FILE
@@ -153,7 +153,6 @@ int main(int argc, char* argv[]) {
        MPIX_Get_property(comm_world, MPIDO_RECT_COMM, &rec_world);
 #endif
 
-
     for (msg_size = message_min; msg_size < message_max + 1; msg_size *= msg_factor) {
         array = create_rand_elms(msg_size);
 
@@ -177,10 +176,8 @@ int main(int argc, char* argv[]) {
         free(array);
     }
 
-
     if (rec != 0) {
         for (msg_size = message_min; msg_size < message_max + 1; msg_size *= msg_factor) {
-
 			array = create_rand_elms(msg_size);
 			MPI_Barrier(MPI_COMM_WORLD);
 
@@ -209,11 +206,11 @@ int main(int argc, char* argv[]) {
 
 			free(array);
 			MPI_Barrier(MPI_COMM_WORLD);
-
         }
     }
 
-    if (debug == 2) {        // benchmark mpi_comm_split
+    // benchmark mpi_comm_split
+    if (debug == 2) {
         MPI_Comm in_group_comm, out_group_comm;
         double max_time_out, max_time_in;
 

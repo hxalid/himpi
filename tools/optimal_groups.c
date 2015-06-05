@@ -1,4 +1,4 @@
-/*
+/*!
  * find_optimal_group.c
  *
  *  Created on: 26 Mar 2015
@@ -12,6 +12,27 @@
 #include <math.h>
 
 hmpi_group_data* group_data;
+
+
+int get_specific_factor(int num_procs, int factor_idx) {
+	int g = 0;
+	int idx_counter = 0;
+	int factor = 1;
+
+	if (factor_idx > 0) {
+		for (g=1; g<num_procs; g++) {
+			if(num_procs%g==0){
+				idx_counter++;
+				if(idx_counter==factor_idx) {
+					factor = g;
+					break;
+				}
+			}
+		}
+	}
+	return factor;
+}
+
 
 int get_hmpi_group(int msg_size, int root, MPI_Comm comm_world, int num_levels,
 		int alg_in, int alg_out, hmpi_operations op_id) {
@@ -29,8 +50,6 @@ int get_hmpi_group(int msg_size, int root, MPI_Comm comm_world, int num_levels,
 		if (num_procs % g == 0)
 			num_groups++;
 	}
-
-	if (my_rank==0) printf("num_procs=%d, num_groups=%d\n", num_procs, num_groups);
 
 	double* g_times = (double*) calloc(num_groups, sizeof(double));
 	if (g_times == NULL) {
@@ -72,7 +91,11 @@ int get_hmpi_group(int msg_size, int root, MPI_Comm comm_world, int num_levels,
 		}
 	}
 
-	int group = (int)pow(2, gsl_stats_min_index(g_times, 1, num_groups));
+	int min_idx = gsl_stats_min_index(g_times, 1, num_groups);
+	/* Send min_idx+1 as array index start from 0,
+	 * but we prefer to start from 1 to index factors.
+	 */
+	int group = get_specific_factor(num_procs, min_idx+1);
 	free(g_times);
 
 	return group;
@@ -142,8 +165,8 @@ void save_hmpi_optimal_groups(int min_msg_size, int max_msg_size,
 
 }
 
-/*
- * TODO: not ready yet
+/*!
+ * TODO: not implemented yet
  */
 void save_hmpi_groups_in_memory(int min_msg_size, int max_msg_size,
 		int msg_stride, int root, MPI_Comm comm_world, int num_levels,

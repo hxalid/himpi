@@ -1,8 +1,8 @@
-/*
+/*!
  * hmpi_init.c
  *
  *  Created on: 29 Apr 2015
- *      Author: khalidhasanov
+ *      Author: Khalid Hasanov
  */
 
 #include <stdlib.h>

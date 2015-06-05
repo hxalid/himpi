@@ -33,7 +33,7 @@
  * and used at runtime. 
  * 
  * \section authors Authors
- * Alexey Lastovetsky, Vladimir Rychkov, Maureen O'Flynn, Kiril Dichev
+ * Alexey Lastovetsky, Vladimir Rychkov, Maureen O'Flynn, Kiril Dichev, Khalid Hasanov
  * 
  * Heterogeneous Computing Laboratory\n
  * School of Computer Science and Informatics, University College Dublin\n
