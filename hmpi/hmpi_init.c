@@ -89,13 +89,15 @@ int HMPI_Init(int *argc, char ***argv) {
 	should_generate_config = 1;
 #endif
 
-	if (henv.generate_config == 0 || henv.generate_config == 1)
+	if (getenv("HMPI_GENERATE_CONFIG") != NULL) {
 		should_generate_config = henv.generate_config;
+	}
 
-	if (should_generate_config)
+	if (should_generate_config) {
 		save_hmpi_optimal_groups(henv.min_msg, henv.max_msg, henv.msg_stride,
 				henv.root, MPI_COMM_WORLD, henv.num_levels, henv.bcast_alg_in,
 				henv.bcast_alg_out, op_bcast, 0); //TODO: 0
+	}
 
 	return rc;
 }

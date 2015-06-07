@@ -115,6 +115,18 @@ void save_hmpi_optimal_groups(int min_msg_size, int max_msg_size,
 	MPI_Comm_rank(comm_world, &rank);
 	MPI_Comm_size(comm_world, &comm_size);
 
+
+	/*
+	 * Find optimal number of groups for p\in[HMPI_MIN_PROCS+1, comm_size]
+	 */
+	int p_end = comm_size - HMPI_MIN_PROCS;
+	if (use_one_proc) {
+		p_end = 1;
+	}
+
+	if (is_same_config(min_msg_size, max_msg_size, msg_stride, comm_size-p_end+1, comm_size, HMPI_CONF_FILE_NAME))
+		return;
+
 	FILE* fp;
 //	if (rank == 0) {
 	//TODO: configurable filename
@@ -129,13 +141,6 @@ void save_hmpi_optimal_groups(int min_msg_size, int max_msg_size,
 	}
 //	}
 
-	/*
-	 * Find optimal number of groups for p\in[HMPI_MIN_PROCS+1, comm_size]
-	 */
-	int p_end = comm_size - HMPI_MIN_PROCS;
-	if (use_one_proc) {
-		p_end = 1;
-	}
 
 	for (p = 0; p < p_end; p++) {
 		MPI_Comm sub_comm;

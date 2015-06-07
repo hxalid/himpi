@@ -8,6 +8,5 @@
 #include "hmpi.h"
 
 int HMPI_Finalize( void ) {
-
 	return MPI_Finalize();
 }
