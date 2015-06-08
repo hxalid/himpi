@@ -41,7 +41,7 @@ int hierarchical_gather(void *sendbuf, int sendcnt, MPI_Datatype sendtype,
 		MPI_Type_get_extent(recvtype, &lb, &extent);
 		void* g_rcvbuf = malloc(extent * pg * recvcnt);
 
-		/* Gather inside groups */
+		/*! Gather inside groups */
 		MPI_Comm_split(comm, my_group, rank, &in_group_comm);
 		if (in_group_comm != MPI_COMM_NULL) {
 			res = MPI_Gather(sendbuf, recvcnt, sendtype, g_rcvbuf, recvcnt,
@@ -54,7 +54,7 @@ int hierarchical_gather(void *sendbuf, int sendcnt, MPI_Datatype sendtype,
 			MPI_Abort(comm, 1);
 		}
 
-		/* Gather between groups */
+		/*! Gather between groups */
 		MPI_Comm_split(comm, (rank - my_group * pg == 0) ? 0 : MPI_UNDEFINED,
 				rank, &out_group_comm);
 		if (out_group_comm != MPI_COMM_NULL) {

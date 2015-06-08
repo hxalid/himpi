@@ -32,11 +32,7 @@
 #define _unused(x) ((void)x)
 
 typedef enum hmpi_operations {
-   op_bcast,
-   op_reduce,
-   op_allreduce,
-   op_scatter,
-   op_gather
+	op_bcast, op_reduce, op_allreduce, op_scatter, op_gather
 } hmpi_operations;
 
 /*! hmpi configuration parameters */
@@ -49,6 +45,7 @@ typedef struct hmpi_conf {
 	int alg_out;
 } hmpi_conf;
 
+/*! hmpi algorithm parameters */
 typedef struct hmpi_env {
 	int min_msg;
 	int max_msg;
@@ -62,12 +59,12 @@ typedef struct hmpi_env {
 	int generate_config;
 } hmpi_env;
 
-typedef struct hmpi_group_data{
+/*! It might be used in future to implement in-memory configuration */
+typedef struct hmpi_group_data {
 	int num_procs;
 	int num_groups;
 	int msg_size;
 } hmpi_group_data;
-
 
 extern const char *HMPI_CONF_FILE_NAME;
 extern hmpi_env henv;
@@ -76,10 +73,16 @@ extern hmpi_group_data* group_data;
 int validate_input(int num_groups, int num_procs);
 
 int hierarchical_broadcast(void *buffer, int count, MPI_Datatype datatype,
-        int root, MPI_Comm comm, int num_groups, int num_levels, int alg_in, int alg_out);
+		int root, MPI_Comm comm, int num_groups, int num_levels, int alg_in,
+		int alg_out);
 
-int hierarchical_reduce(void *snd_buffer, void* rcv_buffer, int count, MPI_Datatype datatype, MPI_Op op,
-        int root, MPI_Comm comm_world, int num_groups, int num_levels, int alg_in, int alg_out);
+int hierarchical_reduce(void *snd_buffer, void* rcv_buffer, int count,
+		MPI_Datatype datatype, MPI_Op op, int root, MPI_Comm comm_world,
+		int num_groups, int num_levels, int alg_in, int alg_out);
+
+int hierarchical_allreduce(void *snd_buffer, void* rcv_buffer, int count,
+		MPI_Datatype datatype, MPI_Op op, MPI_Comm comm_world, int num_groups,
+		int num_levels, int alg_in, int alg_out);
 
 int hierarchical_gather(void *sendbuf, int sendcnt, MPI_Datatype sendtype,
 		void *recvbuf, int recvcnt, MPI_Datatype recvtype, int root,
@@ -89,11 +92,14 @@ int hierarchical_scatter(void *sendbuf, int sendcnt, MPI_Datatype sendtype,
 		void *recvbuf, int recvcnt, MPI_Datatype recvtype, int root,
 		MPI_Comm comm, int num_groups, int num_levels, int alg_in, int alg_out);
 
-int HMPI_Bcast(void *buffer, int count, MPI_Datatype datatype,
-        int root, MPI_Comm comm_world);
+int HMPI_Bcast(void *buffer, int count, MPI_Datatype datatype, int root,
+		MPI_Comm comm_world);
 
-int HMPI_Reduce(void *snd_buffer, void* rcv_buffer, int count, MPI_Datatype datatype, MPI_Op op,
-        int root, MPI_Comm comm);
+int HMPI_Reduce(void *snd_buffer, void* rcv_buffer, int count,
+		MPI_Datatype datatype, MPI_Op op, int root, MPI_Comm comm);
+
+int HMPI_Allreduce(void *snd_buffer, void* rcv_buffer, int count,
+		MPI_Datatype datatype, MPI_Op op, MPI_Comm comm);
 
 int HMPI_Scatter(void *sendbuf, int sendcnt, MPI_Datatype sendtype,
 		void *recvbuf, int recvcnt, MPI_Datatype recvtype, int root,
@@ -103,7 +109,6 @@ int HMPI_Gather(void *sendbuf, int sendcnt, MPI_Datatype sendtype,
 		void *recvbuf, int recvcnt, MPI_Datatype recvtype, int root,
 		MPI_Comm comm);
 
-int HMPI_Init( int *argc, char ***argv );
-
+int HMPI_Init(int *argc, char ***argv);
 
 #endif /* HMPI_HMPI_H_ */

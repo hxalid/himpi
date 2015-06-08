@@ -41,7 +41,7 @@ int hierarchical_broadcast(void *buffer, int count, MPI_Datatype datatype,
         MPIX_Get_property(in_group_comm, MPIDO_RECT_COMM, &(bcast_response.rec_in_group_comm));
 #endif
 
-        /*
+        /*!
          * Start broadcasting between groups.
          * If num_levels == -1 then broadcast only inside (just for debugging),
          * else if num_levels is 1 then do hierarchical bcast,
@@ -59,21 +59,25 @@ int hierarchical_broadcast(void *buffer, int count, MPI_Datatype datatype,
 
         }
 
-        /*
+        /*!
          * Start broadcasting inside groups
          */
         MPI_Comm_split(comm, my_group, rank, &in_group_comm);
         root_inside = root;
         switch (num_levels) {
-            case 1: // 1 level of hierarchy
+            case 1:
+            	//! 1 level of hierarchy
                 hpnla_bcast(buffer, count, datatype, root_inside, in_group_comm, alg_in);
                 break;
             case -1:
-                // Just to see if broadcast inside groups is better than that of with MPI_COMM_WORLD
+                //! Just to see if broadcast inside groups is better than that of with MPI_COMM_WORLD
                 hpnla_bcast(buffer, count, datatype, root_inside, in_group_comm, alg_in);
                 break;
-            default: // e.g. -2
-                // Don't broadcast inside groups. Just to see if broadcast between groups is better than that of with MPI_COMM_WORLD
+            default: //! e.g. -2
+                /*!
+                 * Don't broadcast inside groups.
+                 * Just to see if broadcast between groups is better than that of with MPI_COMM_WORLD
+                 */
                 break;
         }
 

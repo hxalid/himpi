@@ -62,7 +62,7 @@ int HMPI_Init(int *argc, char ***argv) {
 	//fprintf(stdout, "No group config file specified, g=sqrt(p) will be used\n");
 #endif
 
-	/*
+	/*!
 	 * User can overwrite the config file name by environment variable
 	 */
 	if (henv.conf_file_name!=NULL)
@@ -74,7 +74,7 @@ int HMPI_Init(int *argc, char ***argv) {
 	int rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-	//TODO: this part should be enable/disable by some debug level
+	//TODO: this part should be enabled/disabled by some debug level
 	char processor_name[MPI_MAX_PROCESSOR_NAME];
 	int name_len;
 	MPI_Get_processor_name(processor_name, &name_len);

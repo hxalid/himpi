@@ -27,157 +27,159 @@
 #include <mpix.h>
 #endif
 
-
 int main(int argc, char* argv[]) {
-    int i = 0;
-    int rec = 1;
-    int alg = 0;
-    int root = 0;
-    int reps = 30;
-    int debug = 0;
-    int use_any_root = 0;
-    int rec_world = -1;
-    int pg = 1;
-    int groups = 1;
-    int my_group = 0;
-    int rank;
-    int num_proc;
-    int message_min = 1;
-    int message_max = 10485760; //10MB
-    int msg_factor = 2;
-    int msg_size;
-    char* array; /* storage for message  */
-    double start_time, end_time;
-    double elapsed_time, max_time; /* time spent for broadcast */
-    int bcast_linear_segment_size = 1024; //TODO
+	int i = 0;
+	int rec = 1;
+	int alg = 0;
+	int root = 0;
+	int reps = 30;
+	int debug = 0;
+	int use_any_root = 0;
+	int rec_world = -1;
+	int pg = 1;
+	int groups = 1;
+	int my_group = 0;
+	int rank;
+	int num_proc;
+	int message_min = 1;
+	int message_max = 10485760; //10MB
+	int msg_factor = 2;
+	int msg_size;
+	char* array; /* storage for message  */
+	double start_time, end_time;
+	double elapsed_time, max_time; /* time spent for broadcast */
+	int bcast_linear_segment_size = 1024; //TODO
 
+	int p_name_len;
+	char p_name[MPI_MAX_PROCESSOR_NAME];
 
-    int p_name_len;
-    char p_name[MPI_MAX_PROCESSOR_NAME];
+	srand(time(NULL));
 
-    srand(time(NULL));
+	/*! Start up MPI */
+	HMPI_Init(&argc, &argv);
 
-    /* Start up MPI */
-   // MPI_Init(&argc, &argv);
-    HMPI_Init(&argc, &argv);
+	/*! Find out processor name */
+	MPI_Get_processor_name(p_name, &p_name_len);
 
-    /* Find out processor name */
-    MPI_Get_processor_name(p_name, &p_name_len);
+	/*! Find out process rank  */
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    /* Find out process rank  */
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	/*! Find out number of processes */
+	MPI_Comm_size(MPI_COMM_WORLD, &num_proc);
 
-    /* Find out number of processes */
-    MPI_Comm_size(MPI_COMM_WORLD, &num_proc);
+	int g_max = num_proc;
 
-    int g_max = num_proc;
+	int opt;
+	while ((opt = getopt(argc, argv, "m:M:r:s:i:a:g:f:c:d:uh")) != -1) {
+		switch (opt) {
+		case 'm':
+			message_min = atoi(optarg);
+			break;
+		case 'M':
+			message_max = atoi(optarg);
+			break;
+		case 'r':
+			rec = atoi(optarg);
+			break;
+		case 's':
+			root = atoi(optarg);
+			break;
+		case 'i':
+			reps = atoi(optarg);
+			break;
+		case 'a':
+			alg = atoi(optarg);
+			break;
+		case 'g':
+			g_max = atoi(optarg);
+			break;
+		case 'f':
+			msg_factor = atoi(optarg);
+			break;
+		case 'c':
+			bcast_linear_segment_size = atoi(optarg);
+			break;
+		case 'd':
+			debug = atoi(optarg);
+			break;
+		case 'u':
+			use_any_root = 1;
+			break;
+		case 'h':
+			if (rank == 0)
+				fprintf(stdout, "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n",
+						"-m minimum message size", "-M maximum message size",
+						"-f message_factor", "-r number of hierarchies",
+						"-s bcast root", "-i number of iterations",
+						"-a broadcast algorithm to use",
+						"-g maximum number of groups",
+						"-d set to 0 disable host names. Default is 1",
+						"-h help");
+			MPI_Finalize();
+			return 0;
+		default:
+			fprintf(stderr, "Unknown option %s\n", optarg);
+			break;
+		}
+	}
 
-    int opt;
-    while ((opt = getopt(argc, argv, "m:M:r:s:i:a:g:f:c:d:uh")) != -1) {
-        switch (opt) {
-            case 'm':
-                message_min = atoi(optarg);
-                break;
-            case 'M':
-                message_max = atoi(optarg);
-                break;
-            case 'r':
-                rec = atoi(optarg);
-                break;
-            case 's':
-                root = atoi(optarg);
-                break;
-            case 'i':
-                reps = atoi(optarg);
-                break;
-            case 'a':
-                alg = atoi(optarg);
-                break;
-            case 'g':
-                g_max = atoi(optarg);
-                break;
-            case 'f':
-                msg_factor = atoi(optarg);
-                break;
-            case 'c':
-                bcast_linear_segment_size = atoi(optarg);
-                break;
-            case 'd':
-                debug = atoi(optarg);
-                break;
-            case 'u':
-                use_any_root = 1;
-                break;
-            case 'h':
-                if (rank == 0)
-                    fprintf(stdout,
-                        "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n",
-                        "-m minimum message size",
-                        "-M maximum message size",
-                        "-f message_factor",
-                        "-r number of hierarchies",
-                        "-s bcast root",
-                        "-i number of iterations",
-                        "-a broadcast algorithm to use",
-                        "-g maximum number of groups",
-                        "-d set to 0 disable host names. Default is 1",
-                        "-h help");
-                MPI_Finalize();
-                return 0;
-            default:
-                fprintf(stderr, "Unknown option %s\n", optarg);
-                break;
-        }
-    }
+	if ((use_any_root && (root < 0 || root > num_proc))
+			|| (!use_any_root && root)) {
+		if (!rank)
+			fprintf(stdout, "Wrong root\n");
+		MPI_Finalize();
+		return -1;
+	}
 
-    if ((use_any_root && (root < 0 || root > num_proc)) || (!use_any_root && root)) {
-        if (!rank)
-            fprintf(stdout, "Wrong root\n");
-        MPI_Finalize();
-        return -1;
-    }
+	if (debug > 0) {
+		fprintf(stdout, "%d: %s\n", rank, p_name);
+		MPI_Barrier(MPI_COMM_WORLD);
+		MPI_Barrier(MPI_COMM_WORLD);
+	}
 
-    if (debug > 0) {
-        fprintf(stdout, "%d: %s\n", rank, p_name);
-        MPI_Barrier(MPI_COMM_WORLD);
-        MPI_Barrier(MPI_COMM_WORLD);
-    }
-
-    if (rank == root) {
-        fprintf(stdout, "Inputs: root=%d, m=%d, M=%d, f=%d, rec=%d, reps=%d, a=%d, d=%d\n", root, message_min, message_max, msg_factor, rec, reps, alg, debug);
-        fprintf(stdout, "root  p   g    msg     time     rec   reps   rec_in  rec_out  rec_world \n");
-    }
+	if (rank == root) {
+		fprintf(stdout,
+				"Inputs: root=%d, m=%d, M=%d, f=%d, rec=%d, reps=%d, a=%d, d=%d\n",
+				root, message_min, message_max, msg_factor, rec, reps, alg,
+				debug);
+		fprintf(stdout,
+				"root  p   g    msg     time     rec   reps   rec_in  rec_out  rec_world \n");
+	}
 
 #if HAVE_MPIX_H
-    if (debug == 2)
-       MPIX_Get_property(comm_world, MPIDO_RECT_COMM, &rec_world);
+	if (debug == 2)
+	MPIX_Get_property(comm_world, MPIDO_RECT_COMM, &rec_world);
 #endif
 
-    for (msg_size = message_min; msg_size < message_max + 1; msg_size *= msg_factor) {
-        array = create_rand_elms(msg_size);
+	for (msg_size = message_min; msg_size < message_max + 1; msg_size *=
+			msg_factor) {
+		array = create_rand_elms(msg_size);
 
-        elapsed_time = 0.;
-        for (i = 0; i < reps; i++) {
-            MPI_Barrier(MPI_COMM_WORLD);
-            start_time = MPI_Wtime();
-            hpnla_bcast(array, msg_size, MPI_CHAR, root, MPI_COMM_WORLD, alg);
-            elapsed_time += (MPI_Wtime() - start_time);
-        }
-        elapsed_time /= reps; // time in sec
+		elapsed_time = 0.;
+		for (i = 0; i < reps; i++) {
+			MPI_Barrier(MPI_COMM_WORLD);
+			start_time = MPI_Wtime();
+			hpnla_bcast(array, msg_size, MPI_CHAR, root, MPI_COMM_WORLD, alg);
+			elapsed_time += (MPI_Wtime() - start_time);
+		}
+		elapsed_time /= reps; // time in sec
 
-        MPI_Barrier(MPI_COMM_WORLD);
-        MPI_Reduce(&elapsed_time, &max_time, 1, MPI_DOUBLE, MPI_MAX, root, MPI_COMM_WORLD);
+		MPI_Barrier(MPI_COMM_WORLD);
+		MPI_Reduce(&elapsed_time, &max_time, 1, MPI_DOUBLE, MPI_MAX, root,
+				MPI_COMM_WORLD);
 
-        if (rank == root) {
-            fprintf(stdout, "MPI_Bcast: %d %d %d %f %f %d %d %d %d %d\n",
-                    root, num_proc, 1, msg_size * sizeof (char) / 1024., max_time, rec, reps, -1, -1, rec_world);
-        }
+		if (rank == root) {
+			fprintf(stdout, "MPI_Bcast: %d %d %d %f %f %d %d %d %d %d\n", root,
+					num_proc, 1, msg_size * sizeof(char) / 1024., max_time, rec,
+					reps, -1, -1, rec_world);
+		}
 
-        free(array);
-    }
+		free(array);
+	}
 
-    if (rec != 0) {
-        for (msg_size = message_min; msg_size < message_max + 1; msg_size *= msg_factor) {
+	if (rec != 0) {
+		for (msg_size = message_min; msg_size < message_max + 1; msg_size *=
+				msg_factor) {
 			array = create_rand_elms(msg_size);
 			MPI_Barrier(MPI_COMM_WORLD);
 
@@ -191,111 +193,105 @@ int main(int argc, char* argv[]) {
 
 			elapsed_time /= reps;
 			MPI_Barrier(MPI_COMM_WORLD);
-			MPI_Reduce(&elapsed_time, &max_time, 1, MPI_DOUBLE, MPI_MAX, root, MPI_COMM_WORLD);
+			MPI_Reduce(&elapsed_time, &max_time, 1, MPI_DOUBLE, MPI_MAX, root,
+					MPI_COMM_WORLD);
 
 			if (rank == root) {
-				fprintf(stdout, "HMPI_Bcast: %d %d %f %f %d %d %d\n",
-						root,
-						num_proc,
-						msg_size * sizeof (char) / 1024.,
-						max_time,
-						rec,
-						reps,
-						rec_world);
+				fprintf(stdout, "HMPI_Bcast: %d %d %f %f %d %d %d\n", root,
+						num_proc, msg_size * sizeof(char) / 1024., max_time,
+						rec, reps, rec_world);
 			}
 
 			free(array);
 			MPI_Barrier(MPI_COMM_WORLD);
-        }
-    }
-
-    // benchmark mpi_comm_split
-    if (debug == 2) {
-        MPI_Comm in_group_comm, out_group_comm;
-        double max_time_out, max_time_in;
-
-        if (num_proc > HMPI_MIN_PROCS) {
-            if (rank == root)
-                fprintf(stdout, "SPLIT. root p g max_time_in max_time_out rec reps\n");
-
-            groups = 2;
-            while (groups < g_max) {
-                if (validate_groups(groups, num_proc) && num_proc % groups == 0) {
-                    pg = num_proc / groups;
-                    my_group = rank / pg;
-
-                    elapsed_time = 0.;
-                    for (i = 0; i < reps; i++) {
-                        MPI_Barrier(MPI_COMM_WORLD);
-                        start_time = MPI_Wtime();
-                        MPI_Comm_split(MPI_COMM_WORLD, (rank - my_group * pg == 0) ? 0 : MPI_UNDEFINED, rank, &out_group_comm);
-                        elapsed_time += (MPI_Wtime() - start_time);
-                    }
-                    elapsed_time /= reps;
-                    MPI_Barrier(MPI_COMM_WORLD);
-                    MPI_Reduce(&elapsed_time, &max_time_out, 1, MPI_DOUBLE, MPI_MAX, root, MPI_COMM_WORLD);
-
-                    elapsed_time = 0.;
-                    for (i = 0; i < reps; i++) {
-                        MPI_Barrier(MPI_COMM_WORLD);
-                        start_time = MPI_Wtime();
-                        MPI_Comm_split(MPI_COMM_WORLD, my_group, rank, &in_group_comm);
-                        elapsed_time += (MPI_Wtime() - start_time);
-                    }
-                    elapsed_time /= reps;
-                    MPI_Barrier(MPI_COMM_WORLD);
-                    MPI_Reduce(&elapsed_time, &max_time_in, 1, MPI_DOUBLE, MPI_MAX, root, MPI_COMM_WORLD);
-
-                    if (rank == root) {
-                        fprintf(stdout, "%d %d %d %f %f %d %d\n",
-                                root,
-                                num_proc,
-                                groups,
-                                max_time_in,
-                                max_time_out,
-                                rec,
-                                reps
-                                );
-                    }
-
-                    if (out_group_comm != MPI_COMM_NULL)
-                        MPI_Comm_free(&out_group_comm);
-                    if (in_group_comm != MPI_COMM_NULL)
-                        MPI_Comm_free(&in_group_comm);
-                }
-                groups++;
-            }
-        }
-    }
-
-    MPI_Barrier(MPI_COMM_WORLD);
-
-
-
-  //  void* handle = dlopen("/usr/local/lib/libmpi.dylib", RTLD_LAZY);
-  //  void* func = dlsym(handle, "MPI_Bcast");
-  //  typedef int (*MPIB_Bcast)(void* buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm);
-
-
- /*   MPIB_result result;
-    MPIB_precision precision;
-    MPIB_getopt_precision_default(&precision);
-    MPIB_coll_container* container = (MPIB_coll_container*)MPIB_HBcast_container_alloc(HMPI_Bcast, );
-
-    int M = 1024;
-    double time_mpiblib = 0;
-    if (rank == 0)
-    	MPIB_print_coll_th("MPI_HBcast", "MAX", num_proc, 0, precision);
-    int start = MPI_Wtime();
-    int err = MPIB_measure_max(container, MPI_COMM_WORLD, 0, M, precision, &result);
-    time_mpiblib += MPI_Wtime() - start;
-	if (rank == 0) {
-		MPIB_print_coll_tr(result);
-        fprintf(stdout, "Time: %le\n", time_mpiblib);
+		}
 	}
 
-*/
+	//! benchmark mpi_comm_split
+	if (debug == 2) {
+		MPI_Comm in_group_comm, out_group_comm;
+		double max_time_out, max_time_in;
 
-    /* Shut down MPI */
-    HMPI_Finalize();
+		if (num_proc > HMPI_MIN_PROCS) {
+			if (rank == root)
+				fprintf(stdout,
+						"SPLIT. root p g max_time_in max_time_out rec reps\n");
+
+			groups = 2;
+			while (groups < g_max) {
+				if (validate_groups(groups, num_proc)
+						&& num_proc % groups == 0) {
+					pg = num_proc / groups;
+					my_group = rank / pg;
+
+					elapsed_time = 0.;
+					for (i = 0; i < reps; i++) {
+						MPI_Barrier(MPI_COMM_WORLD);
+						start_time = MPI_Wtime();
+						MPI_Comm_split(MPI_COMM_WORLD,
+								(rank - my_group * pg == 0) ? 0 : MPI_UNDEFINED,
+								rank, &out_group_comm);
+						elapsed_time += (MPI_Wtime() - start_time);
+					}
+					elapsed_time /= reps;
+					MPI_Barrier(MPI_COMM_WORLD);
+					MPI_Reduce(&elapsed_time, &max_time_out, 1, MPI_DOUBLE,
+							MPI_MAX, root, MPI_COMM_WORLD);
+
+					elapsed_time = 0.;
+					for (i = 0; i < reps; i++) {
+						MPI_Barrier(MPI_COMM_WORLD);
+						start_time = MPI_Wtime();
+						MPI_Comm_split(MPI_COMM_WORLD, my_group, rank,
+								&in_group_comm);
+						elapsed_time += (MPI_Wtime() - start_time);
+					}
+					elapsed_time /= reps;
+					MPI_Barrier(MPI_COMM_WORLD);
+					MPI_Reduce(&elapsed_time, &max_time_in, 1, MPI_DOUBLE,
+							MPI_MAX, root, MPI_COMM_WORLD);
+
+					if (rank == root) {
+						fprintf(stdout, "%d %d %d %f %f %d %d\n", root,
+								num_proc, groups, max_time_in, max_time_out,
+								rec, reps);
+					}
+
+					if (out_group_comm != MPI_COMM_NULL)
+						MPI_Comm_free(&out_group_comm);
+					if (in_group_comm != MPI_COMM_NULL)
+						MPI_Comm_free(&in_group_comm);
+				}
+				groups++;
+			}
+		}
+	}
+
+	MPI_Barrier(MPI_COMM_WORLD);
+
+	//  void* handle = dlopen("/usr/local/lib/libmpi.dylib", RTLD_LAZY);
+	//  void* func = dlsym(handle, "MPI_Bcast");
+	//  typedef int (*MPIB_Bcast)(void* buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm);
+
+	/*   MPIB_result result;
+	 MPIB_precision precision;
+	 MPIB_getopt_precision_default(&precision);
+	 MPIB_coll_container* container = (MPIB_coll_container*)MPIB_HBcast_container_alloc(HMPI_Bcast, );
+
+	 int M = 1024;
+	 double time_mpiblib = 0;
+	 if (rank == 0)
+	 MPIB_print_coll_th("MPI_HBcast", "MAX", num_proc, 0, precision);
+	 int start = MPI_Wtime();
+	 int err = MPIB_measure_max(container, MPI_COMM_WORLD, 0, M, precision, &result);
+	 time_mpiblib += MPI_Wtime() - start;
+	 if (rank == 0) {
+	 MPIB_print_coll_tr(result);
+	 fprintf(stdout, "Time: %le\n", time_mpiblib);
+	 }
+
+	 */
+
+	/*! Shut down MPI */
+	HMPI_Finalize();
 } /* main */

@@ -1,4 +1,4 @@
-/*
+/*!
  * hallreduce.c
  *
  *  Created on: 26 Mar 2015
@@ -7,10 +7,11 @@
 #include <stdlib.h>
 
 #include "hmpi.h"
+#include "../tools/utils.h"
 
-int HMPI_Allreduce(void *snd_buffer, void* rcv_buffer, int count,
+int hierarchical_allreduce(void *snd_buffer, void* rcv_buffer, int count,
 		MPI_Datatype datatype, MPI_Op op, MPI_Comm comm_world, int num_groups,
-		int rec, int alg, int debug, int myrank) {
+		int num_levels, int alg_in, int alg_out) {
 	int pg;
 	int rank;
 	int size;
@@ -27,7 +28,6 @@ int HMPI_Allreduce(void *snd_buffer, void* rcv_buffer, int count,
 	if (size == 1)
 		return MPI_SUCCESS;
 
-	/*TODO make num_groups configurable*/
 	if (size > HMPI_MIN_PROCS && (num_groups > 1 && num_groups < size)) {
 		pg = size / num_groups;
 		my_group = rank / pg;
@@ -36,29 +36,37 @@ int HMPI_Allreduce(void *snd_buffer, void* rcv_buffer, int count,
 		// MPI_Comm_split(comm_world, (rank - my_group * pg == 0) ? 0 : MPI_UNDEFINED, rank, &out_group_comm);
 		MPI_Comm_split(comm_world, rank - my_group * pg, rank, &out_group_comm);
 
-		if (rec == 1)
+		if (num_levels == 1)
 			reduce_in = (double*) malloc(count * sizeof(double));
 
-		//Start broadcast inside groups
-		switch (rec) {
-		case 1: // 1 level of hierarchy
-			MPI_Allreduce(snd_buffer, reduce_in, count, datatype, op, in_group_comm);
+		/*!
+		 * Start broadcasting inside groups
+		 */
+		switch (num_levels) {
+		case 1: //! 1 level of hierarchy
+			MPI_Allreduce(snd_buffer, reduce_in, count, datatype, op,
+					in_group_comm);
 			break;
 		case -1:
 			// Just to see if broadcast inside groups is better than that of with MPI_COMM_WORLD
-			MPI_Allreduce(snd_buffer, rcv_buffer, count, datatype, op, in_group_comm);
+			MPI_Allreduce(snd_buffer, rcv_buffer, count, datatype, op,
+					in_group_comm);
 			break;
-		default: // e.g. -2
-			// Don't broadcast inside groups. Just to see if broadcast between groups is better than that of with MPI_COMM_WORLD
+		default: //! e.g. -2
+			/*!
+			 * Don't broadcast inside groups.
+			 * Just to see if broadcast between groups is better than that of with MPI_COMM_WORLD
+			 */
 			break;
 		}
 
-		//Start allreduce between groups
-		if (out_group_comm != MPI_COMM_NULL && rec != -1) { // if rec == -1 then allreduce only inside
+		//!Start allreduce between groups
+		if (out_group_comm != MPI_COMM_NULL && num_levels != -1) { //! if rec == -1 then allreduce only inside
 			int out_size = 0;
 			int out_rank = -1;
 
-			MPI_Allreduce((rec == 1) ? reduce_in : snd_buffer, rcv_buffer, count, datatype, op, out_group_comm);
+			MPI_Allreduce((num_levels == 1) ? reduce_in : snd_buffer,
+					rcv_buffer, count, datatype, op, out_group_comm);
 		}
 
 		// Now broadcast sub-sums inside groups. We need it if we use communicators between the groups leaders
@@ -68,14 +76,15 @@ int HMPI_Allreduce(void *snd_buffer, void* rcv_buffer, int count,
 		 */
 
 		//TODO: check
-		if (rec == 1)
+		if (num_levels == 1)
 			free(reduce_in);
 
 		if (out_group_comm != MPI_COMM_NULL)
 			MPI_Comm_free(&out_group_comm);
 		if (in_group_comm != MPI_COMM_NULL)
 			MPI_Comm_free(&in_group_comm);
-	} else if (size <= HMPI_MIN_PROCS || (num_groups == 1 || num_groups == size)) {
+	} else if (size <= HMPI_MIN_PROCS
+			|| (num_groups == 1 || num_groups == size)) {
 		//  fprintf(stdout, "Using non-hierarchical reduce: [p=%d, g=%d]\n", size, num_groups);
 		MPI_Allreduce(snd_buffer, rcv_buffer, count, datatype, op, comm_world);
 	} else {
@@ -84,5 +93,22 @@ int HMPI_Allreduce(void *snd_buffer, void* rcv_buffer, int count,
 	}
 
 	return MPI_SUCCESS;
+}
+
+int HMPI_Allreduce(void *snd_buffer, void* rcv_buffer, int count,
+		MPI_Datatype datatype, MPI_Op op, MPI_Comm comm) {
+	MPI_Aint extent, lb;
+	MPI_Type_get_extent(datatype, &lb, &extent);
+	int msg_size = extent * count;
+
+	/*
+	 * TODO: Are you sure all processes have to open config file for read?
+	 */
+	hmpi_conf my_conf = hmpi_get_my_conf(comm, msg_size, HMPI_ROOT_PROC,
+			HMPI_CONF_FILE_NAME, op_allreduce);
+
+	return hierarchical_allreduce(snd_buffer, rcv_buffer, count, datatype, op,
+			comm, my_conf.num_groups, my_conf.num_levels, my_conf.alg_in,
+			my_conf.alg_out);
 }
 

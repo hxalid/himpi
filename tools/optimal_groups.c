@@ -13,17 +13,16 @@
 
 hmpi_group_data* group_data;
 
-
 int get_specific_factor(int num_procs, int factor_idx) {
 	int g = 0;
 	int idx_counter = 0;
 	int factor = 1;
 
 	if (factor_idx > 0) {
-		for (g=1; g<num_procs; g++) {
-			if(num_procs%g==0){
+		for (g = 1; g < num_procs; g++) {
+			if (num_procs % g == 0) {
 				idx_counter++;
-				if(idx_counter==factor_idx) {
+				if (idx_counter == factor_idx) {
 					factor = g;
 					break;
 				}
@@ -32,7 +31,6 @@ int get_specific_factor(int num_procs, int factor_idx) {
 	}
 	return factor;
 }
-
 
 int get_hmpi_group(int msg_size, int root, MPI_Comm comm_world, int num_levels,
 		int alg_in, int alg_out, hmpi_operations op_id) {
@@ -72,8 +70,10 @@ int get_hmpi_group(int msg_size, int root, MPI_Comm comm_world, int num_levels,
 						hierarchical_reduce, g, num_levels, alg_in, alg_out);
 				break;
 			case op_scatter:
-				container = (MPIB_coll_container*) MPIB_HScatter_container_alloc(
-						hierarchical_scatter, g, num_levels, alg_in, alg_out);
+				container =
+						(MPIB_coll_container*) MPIB_HScatter_container_alloc(
+								hierarchical_scatter, g, num_levels, alg_in,
+								alg_out);
 				break;
 			case op_gather:
 				container = (MPIB_coll_container*) MPIB_HGather_container_alloc(
@@ -92,16 +92,17 @@ int get_hmpi_group(int msg_size, int root, MPI_Comm comm_world, int num_levels,
 	}
 
 	int min_idx = gsl_stats_min_index(g_times, 1, num_groups);
-	/* Send min_idx+1 as array index start from 0,
+	/*!
+	 * Send min_idx+1 as array index start from 0,
 	 * but we prefer to start from 1 to index factors.
 	 */
-	int group = get_specific_factor(num_procs, min_idx+1);
+	int group = get_specific_factor(num_procs, min_idx + 1);
 	free(g_times);
 
 	return group;
 }
 
-/*
+/*!
  * Calculate optimal number of groups for all number of processes
  * from HBCAST_MIN_PROCS up to comm_size and save it into a config file.
  */
@@ -115,7 +116,6 @@ void save_hmpi_optimal_groups(int min_msg_size, int max_msg_size,
 	MPI_Comm_rank(comm_world, &rank);
 	MPI_Comm_size(comm_world, &comm_size);
 
-
 	/*
 	 * Find optimal number of groups for p\in[HMPI_MIN_PROCS+1, comm_size]
 	 */
@@ -124,12 +124,11 @@ void save_hmpi_optimal_groups(int min_msg_size, int max_msg_size,
 		p_end = 1;
 	}
 
-	if (is_same_config(min_msg_size, max_msg_size, msg_stride, comm_size-p_end+1, comm_size, HMPI_CONF_FILE_NAME))
+	if (is_same_config(min_msg_size, max_msg_size, msg_stride,
+			comm_size - p_end + 1, comm_size, HMPI_CONF_FILE_NAME))
 		return;
 
 	FILE* fp;
-//	if (rank == 0) {
-	//TODO: configurable filename
 	fp = fopen(HMPI_CONF_FILE_NAME, "w"); //TODO:  should I overwrite?
 	fprintf(fp,
 			"#num_procs\tnum_groups\tnum_levels\tmsg_size\talg_in\talg_out\n");
@@ -139,8 +138,6 @@ void save_hmpi_optimal_groups(int min_msg_size, int max_msg_size,
 		perror("fopen");
 		MPI_Abort(MPI_COMM_WORLD, 201);
 	}
-//	}
-
 
 	for (p = 0; p < p_end; p++) {
 		MPI_Comm sub_comm;
@@ -165,9 +162,7 @@ void save_hmpi_optimal_groups(int min_msg_size, int max_msg_size,
 		}
 	}
 
-//	if (rank == 0)
 	fclose(fp);
-
 }
 
 /*!
@@ -223,26 +218,25 @@ void save_hmpi_groups_in_memory(int min_msg_size, int max_msg_size,
 }
 
 /*
-int group_data_cmp(const struct hmpi_group_data *gd1,
-		const struct hmpi_group_data *gd2) {
-	return (gd1->num_procs == gd2->num_procs
-			&& gd1->num_groups == gd2->num_groups
-			&& gd1->msg_size == gd2->msg_size);
-}
+ int group_data_cmp(const struct hmpi_group_data *gd1,
+ const struct hmpi_group_data *gd2) {
+ return (gd1->num_procs == gd2->num_procs
+ && gd1->num_groups == gd2->num_groups
+ && gd1->msg_size == gd2->msg_size);
+ }
 
-hmpi_group_data* find_group_data(int num_procs, int num_groups, int msg_size) {
-	struct hmpi_group_data needed_data, *result;
-	needed_data.num_procs = num_procs;
-	needed_data.num_groups = num_groups;
-	needed_data.msg_size = msg_size;
+ hmpi_group_data* find_group_data(int num_procs, int num_groups, int msg_size) {
+ struct hmpi_group_data needed_data, *result;
+ needed_data.num_procs = num_procs;
+ needed_data.num_groups = num_groups;
+ needed_data.msg_size = msg_size;
 
-	int count = sizeof(group_data) / sizeof(struct hmpi_group_data);
+ int count = sizeof(group_data) / sizeof(struct hmpi_group_data);
 
-	result = bsearch(&needed_data, group_data, count,
-			sizeof(struct hmpi_group_data), group_data_cmp);
+ result = bsearch(&needed_data, group_data, count,
+ sizeof(struct hmpi_group_data), group_data_cmp);
 
-	return result;
-}
-*/
-
+ return result;
+ }
+ */
 
