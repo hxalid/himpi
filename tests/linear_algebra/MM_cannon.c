@@ -1,8 +1,8 @@
 #include "config.h"
 #include "tools/hpnla_debug.h"
+#include "tools/hpnla_timer.h"
 #include "Matrix_init.h"
 #include "hpnla_cblas.h"
-#include "tools/hpnla_timer.h"
 # include "Cannon.h"
 
 #include <mpi.h>

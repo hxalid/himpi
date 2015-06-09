@@ -4,6 +4,8 @@ include_HEADERS = hmpi.h
 
 noinst_LTLIBRARIES = libhmpi.la
 libhmpi_la_SOURCES = \
+    	mpi_bcast_algs.c \
+    	mpi_bcast_algs.h \
         hmpi.h \
 		hmpi_init.c \
 		hmpi_finalize.c \

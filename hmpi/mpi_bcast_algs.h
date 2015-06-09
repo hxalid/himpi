@@ -5,9 +5,7 @@
 #define MAX_INT_SIZE 50
 #define TEN_KB 10240
 #define Bcast_TAG 904920477 
-
-
-int bcast_linear_segment_size = 1024;
+#define bcast_linear_segment_size 1024
 
 typedef enum hpnla_bcast_algo {
     lin,

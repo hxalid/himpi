@@ -168,11 +168,10 @@ esac
 AC_CONFIG_FILES([
 	Makefile
 	tools/Makefile
-	communication/Makefile
-	cblas_wrappers/Makefile
-    hpnla/Makefile
 	hmpi/Makefile
 	tests/Makefile
+    tests/mpi/Makefile
+    tests/linear_algebra/Makefile
 ])
 
 AC_CONFIG_SUBDIRS([MPIBlib])

@@ -2,8 +2,8 @@
 #include <stdlib.h>
 
 #include "hmpi.h"
-#include "../tools/utils.h"
-#include "communication/hpnla_bcast.h"
+#include "tools/utils.h"
+#include "mpi_bcast_algs.h"
 
 #ifdef MPIX_H
 #include <mpix.h>

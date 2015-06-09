@@ -1,4 +1,4 @@
-#include "../tests/mpi_bcast_algs.h"
+#include "mpi_bcast_algs.h"
 
 
 
@@ -440,18 +440,15 @@ int bcast_binomial_tree(void * buff, int count, MPI_Datatype data_type,
 
     relative_rank = (rank >= root) ? rank - root : rank - root + num_procs;
 
-    //  printf("rank=%d, relative_rank = %d\n", rank, relative_rank);
-
     mask = 0x1;
     while (mask < num_procs) {
         if (relative_rank & mask) {
             src = rank - mask;
             if (src < 0) src += num_procs;
-            //   printf("rank=%d, relative_rank=%d, mask=%d, src=%d\n", rank, relative_rank, mask, src);
             MPI_Recv(buff, count, data_type, src, tag, comm, MPI_STATUS_IGNORE);
             break;
         }
-        mask <<= 1; // mask *= 2
+        mask <<= 1;
     }
 
     mask >>= 1;
@@ -460,9 +457,8 @@ int bcast_binomial_tree(void * buff, int count, MPI_Datatype data_type,
             dst = rank + mask;
             if (dst >= num_procs) dst -= num_procs;
             MPI_Send(buff, count, data_type, dst, tag, comm);
-            //   printf("rank=%d, relative_rank=%d, mask=%d, dst=%d\n", rank, relative_rank, mask, dst);
         }
-        mask >>= 1; // mask /= 2
+        mask >>= 1;
     }
 
     return success;
@@ -534,7 +530,7 @@ void hpnla_bcast(void *buffer, int count, MPI_Datatype datatype,
                         Bcast_TAG, comm, &status);
             }
             break;
-        case original: //4
+        case original: //0
             MPI_Bcast(buffer, count, datatype, root, comm);
             break;
         case scatter_lr_allgather:

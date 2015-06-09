@@ -1,4 +1,4 @@
-SUBDIRS = cblas_wrappers tools communication hpnla hmpi MPIBlib tests 
+SUBDIRS = tools hmpi MPIBlib tests 
 
 include aminclude.am
 EXTRA_DIST = \

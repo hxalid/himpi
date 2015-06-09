@@ -8,7 +8,7 @@
 #ifndef LU_FACTORIZATION_H
 #define	LU_HFACTORIZATION_H
 
-#include "cblas_wrappers/hpnla_cblas.h"
+#include "hpnla_cblas.h"
 
 #define max(_a, _b) ( (_a) < (_b) ? (_b) : (_a) )
 #define min(_a, _b) ( (_a) > (_b) ? (_b) : (_a) )

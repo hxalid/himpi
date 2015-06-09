@@ -11,7 +11,7 @@
 #include "tools/hpnla_conf.h"
 #include "Matrix_init.h"
 #include "2.5D_MM.h"
-#include "cblas_wrappers/hpnla_cblas.h"
+#include "hpnla_cblas.h"
 
 /*int sched_setaffinity(pid_t pid, size_t cpusetsize, cpu_set_t *mask);
   int sched_getaffinity(pid_t pid, size_t cpusetsize, cpu_set_t *mask);

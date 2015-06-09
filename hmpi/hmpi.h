@@ -76,11 +76,11 @@ int hierarchical_broadcast(void *buffer, int count, MPI_Datatype datatype,
 		int root, MPI_Comm comm, int num_groups, int num_levels, int alg_in,
 		int alg_out);
 
-int hierarchical_reduce(void *snd_buffer, void* rcv_buffer, int count,
+int hierarchical_reduce(void *sendbuf, void* recvbuf, int count,
 		MPI_Datatype datatype, MPI_Op op, int root, MPI_Comm comm_world,
 		int num_groups, int num_levels, int alg_in, int alg_out);
 
-int hierarchical_allreduce(void *snd_buffer, void* rcv_buffer, int count,
+int hierarchical_allreduce(void *sendbuf, void* recvbuf, int count,
 		MPI_Datatype datatype, MPI_Op op, MPI_Comm comm_world, int num_groups,
 		int num_levels, int alg_in, int alg_out);
 
@@ -95,10 +95,10 @@ int hierarchical_scatter(void *sendbuf, int sendcnt, MPI_Datatype sendtype,
 int HMPI_Bcast(void *buffer, int count, MPI_Datatype datatype, int root,
 		MPI_Comm comm_world);
 
-int HMPI_Reduce(void *snd_buffer, void* rcv_buffer, int count,
+int HMPI_Reduce(void *sendbuf, void* recvbuf, int count,
 		MPI_Datatype datatype, MPI_Op op, int root, MPI_Comm comm);
 
-int HMPI_Allreduce(void *snd_buffer, void* rcv_buffer, int count,
+int HMPI_Allreduce(void *sendbuf, void* recvbuf, int count,
 		MPI_Datatype datatype, MPI_Op op, MPI_Comm comm);
 
 int HMPI_Scatter(void *sendbuf, int sendcnt, MPI_Datatype sendtype,

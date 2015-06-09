@@ -9,7 +9,7 @@
 #include "hmpi.h"
 #include "../tools/utils.h"
 
-int hierarchical_allreduce(void *snd_buffer, void* rcv_buffer, int count,
+int hierarchical_allreduce(void *sendbuf, void* recvbuf, int count,
 		MPI_Datatype datatype, MPI_Op op, MPI_Comm comm_world, int num_groups,
 		int num_levels, int alg_in, int alg_out) {
 	int pg;
@@ -44,12 +44,12 @@ int hierarchical_allreduce(void *snd_buffer, void* rcv_buffer, int count,
 		 */
 		switch (num_levels) {
 		case 1: //! 1 level of hierarchy
-			MPI_Allreduce(snd_buffer, reduce_in, count, datatype, op,
+			MPI_Allreduce(sendbuf, reduce_in, count, datatype, op,
 					in_group_comm);
 			break;
 		case -1:
 			// Just to see if broadcast inside groups is better than that of with MPI_COMM_WORLD
-			MPI_Allreduce(snd_buffer, rcv_buffer, count, datatype, op,
+			MPI_Allreduce(sendbuf, recvbuf, count, datatype, op,
 					in_group_comm);
 			break;
 		default: //! e.g. -2
@@ -65,8 +65,8 @@ int hierarchical_allreduce(void *snd_buffer, void* rcv_buffer, int count,
 			int out_size = 0;
 			int out_rank = -1;
 
-			MPI_Allreduce((num_levels == 1) ? reduce_in : snd_buffer,
-					rcv_buffer, count, datatype, op, out_group_comm);
+			MPI_Allreduce((num_levels == 1) ? reduce_in : sendbuf,
+					recvbuf, count, datatype, op, out_group_comm);
 		}
 
 		// Now broadcast sub-sums inside groups. We need it if we use communicators between the groups leaders
@@ -86,7 +86,7 @@ int hierarchical_allreduce(void *snd_buffer, void* rcv_buffer, int count,
 	} else if (size <= HMPI_MIN_PROCS
 			|| (num_groups == 1 || num_groups == size)) {
 		//  fprintf(stdout, "Using non-hierarchical reduce: [p=%d, g=%d]\n", size, num_groups);
-		MPI_Allreduce(snd_buffer, rcv_buffer, count, datatype, op, comm_world);
+		MPI_Allreduce(sendbuf, recvbuf, count, datatype, op, comm_world);
 	} else {
 		/*TODO*/
 		// fprintf(stdout, "Wrong number of groups: [p=%d, g=%d]\n", size, num_groups);
@@ -95,7 +95,7 @@ int hierarchical_allreduce(void *snd_buffer, void* rcv_buffer, int count,
 	return MPI_SUCCESS;
 }
 
-int HMPI_Allreduce(void *snd_buffer, void* rcv_buffer, int count,
+int HMPI_Allreduce(void *sendbuf, void* recvbuf, int count,
 		MPI_Datatype datatype, MPI_Op op, MPI_Comm comm) {
 	MPI_Aint extent, lb;
 	MPI_Type_get_extent(datatype, &lb, &extent);
@@ -107,7 +107,7 @@ int HMPI_Allreduce(void *snd_buffer, void* rcv_buffer, int count,
 	hmpi_conf my_conf = hmpi_get_my_conf(comm, msg_size, HMPI_ROOT_PROC,
 			HMPI_CONF_FILE_NAME, op_allreduce);
 
-	return hierarchical_allreduce(snd_buffer, rcv_buffer, count, datatype, op,
+	return hierarchical_allreduce(sendbuf, recvbuf, count, datatype, op,
 			comm, my_conf.num_groups, my_conf.num_levels, my_conf.alg_in,
 			my_conf.alg_out);
 }

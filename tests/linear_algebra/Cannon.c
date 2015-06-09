@@ -1,6 +1,6 @@
-#include "Matrix_init.h"
 #include "tools/hpnla_debug.h"
 #include "tools/hpnla_timer.h"
+#include "Matrix_init.h"
 #include "Cannon.h"
 #include <sys/time.h>
 #include <stdbool.h>

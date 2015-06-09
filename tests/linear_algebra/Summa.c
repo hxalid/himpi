@@ -7,8 +7,8 @@
 #include "Matrix_init.h"
 #include "tools/hpnla_debug.h"
 #include "tools/hpnla_timer.h"
-#include "communication/hpnla_bcast.h"
-#include "cblas_wrappers/hpnla_cblas.h"
+#include "hmpi/mpi_bcast_algs.h"
+#include "hpnla_cblas.h"
 #include "Summa.h"
 #include <sys/time.h>
 #ifdef HDNLA_SMPI

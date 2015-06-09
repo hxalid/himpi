@@ -5,10 +5,10 @@
  */
 
 #include "tools/hpnla_debug.h"
-#include "communication/hpnla_bcast.h"
+#include "tools/hpnla_timer.h"
+#include "hmpi/mpi_bcast_algs.h"
 #include "Matrix_init.h"
 #include "Summa.h"
-#include "tools/hpnla_timer.h"
 #include <stdlib.h>
 #ifdef HDNLA_SMPI
 #include <smpi.h>
@@ -255,7 +255,7 @@ double two_dot_five(hpnla_gemm* gemm,
   time = get_timediff(&start_time,&end_time);
   double reduce_time = get_timediff(&start_time_reduce,&end_time_reduce);
 
-  printf("size_row: %zu, size_col: %zu, row: %zu, col: %zu, NB_proc: %d,NB_groups: %zu, n_global: %d, n: %zu, Block_size: %zu, Communication: %le, reduce: %le, "
+  fprintf(stdout, "size_row: %zu, size_col: %zu, row: %zu, col: %zu, NB_proc: %d,NB_groups: %zu, n_global: %d, n: %zu, Block_size: %zu, Communication: %le, reduce: %le, "
          "Stime: %le, Scomputation: %le, Scommunication: %le, bcast_algorithm: %d, is_cyclic: %d\n",
          size_row,
          size_col,

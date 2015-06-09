@@ -19,9 +19,9 @@
 #include "config.h"
 
 //#include "hbcast_old.h"
-#include "../hmpi/hmpi.h"
-#include "../tools/utils.h"
-#include "../tools/optimal_groups.h"
+#include "hmpi/hmpi.h"
+#include "tools/utils.h"
+#include "tools/optimal_groups.h"
 
 #ifdef HAVE_MPIX_H
 #include <mpix.h>
@@ -48,7 +48,6 @@ int main(int argc, char* argv[]) {
 	char* array; /* storage for message  */
 	double start_time, end_time;
 	double elapsed_time, max_time; /* time spent for broadcast */
-	int bcast_linear_segment_size = 1024; //TODO
 
 	int p_name_len;
 	char p_name[MPI_MAX_PROCESSOR_NAME];
@@ -70,7 +69,7 @@ int main(int argc, char* argv[]) {
 	int g_max = num_proc;
 
 	int opt;
-	while ((opt = getopt(argc, argv, "m:M:r:s:i:a:g:f:c:d:uh")) != -1) {
+	while ((opt = getopt(argc, argv, "m:M:r:s:i:a:g:f:d:uh")) != -1) {
 		switch (opt) {
 		case 'm':
 			message_min = atoi(optarg);
@@ -95,9 +94,6 @@ int main(int argc, char* argv[]) {
 			break;
 		case 'f':
 			msg_factor = atoi(optarg);
-			break;
-		case 'c':
-			bcast_linear_segment_size = atoi(optarg);
 			break;
 		case 'd':
 			debug = atoi(optarg);

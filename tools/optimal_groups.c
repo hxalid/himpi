@@ -116,7 +116,7 @@ void save_hmpi_optimal_groups(int min_msg_size, int max_msg_size,
 	MPI_Comm_rank(comm_world, &rank);
 	MPI_Comm_size(comm_world, &comm_size);
 
-	/*
+	/*!
 	 * Find optimal number of groups for p\in[HMPI_MIN_PROCS+1, comm_size]
 	 */
 	int p_end = comm_size - HMPI_MIN_PROCS;
@@ -152,7 +152,6 @@ void save_hmpi_optimal_groups(int min_msg_size, int max_msg_size,
 				int group = get_hmpi_group(msg, root, sub_comm, num_levels,
 						alg_in, alg_out, op_id);
 				if (group != -1) {
-					//if (rank == 0)
 					fprintf(fp, "%d\t%d\t%d\t%d\t%d\t%d\n", new_size, group, 1,
 							msg, 0, 0);
 				}
