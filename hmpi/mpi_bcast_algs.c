@@ -465,7 +465,7 @@ int bcast_binomial_tree(void * buff, int count, MPI_Datatype data_type,
 }
 
 void hpnla_bcast(void *buffer, int count, MPI_Datatype datatype,
-        int root, MPI_Comm comm, hpnla_bcast_algo algorithm) {
+        int root, MPI_Comm comm, bcast_algo algorithm) {
     int myrank;
     int size;
     MPI_Status status;
@@ -530,7 +530,7 @@ void hpnla_bcast(void *buffer, int count, MPI_Datatype datatype,
                         Bcast_TAG, comm, &status);
             }
             break;
-        case original: //0
+        case native: //0
             MPI_Bcast(buffer, count, datatype, root, comm);
             break;
         case scatter_lr_allgather:

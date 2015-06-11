@@ -32,7 +32,7 @@
 #define _unused(x) ((void)x)
 
 typedef enum hmpi_operations {
-	op_bcast, op_reduce, op_allreduce, op_scatter, op_gather
+	op_bcast, op_reduce, op_allreduce, op_scatter, op_gather, op_all
 } hmpi_operations;
 
 /*! hmpi configuration parameters */

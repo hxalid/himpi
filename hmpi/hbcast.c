@@ -92,7 +92,7 @@ int hierarchical_broadcast(void *buffer, int count, MPI_Datatype datatype,
 #endif
         
        // fprintf(stdout, "Using non-hierarchical bcast\n");
-    	//TODO: alg_in is default is there is no hierarchy
+    	//TODO: alg_in is default if there is no hierarchy
         hpnla_bcast(buffer, count, datatype, root, comm, alg_in);
     } else if (!validate_groups(num_groups, comm_size)) {
         /*TODO*/

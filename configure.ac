@@ -45,6 +45,11 @@ if test "$with_group_conf" != ""; then
 fi
 
 
+AC_MSG_CHECKING([Which hmpi collectives should be optimized by default])
+AC_ARG_WITH([hmpi_opid], [AC_HELP_STRING([--with-hmpi-opid=<id>], [HMPI operation/collective id])])
+AC_DEFINE_UNQUOTED([HMPI_OPID], ["$with_hmpi_opid"], [Target HMPI operation selected])
+
+
 AC_MSG_CHECKING([Enable config generation])
 AC_ARG_ENABLE([config_generation], [AC_HELP_STRING([--enable-config-generation], [Enable config-generation (default: disabled)])], [config_generation="yes"], [config_generation="no"])
 if test "$config-generation" = "yes"; then

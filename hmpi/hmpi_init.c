@@ -65,7 +65,7 @@ int HMPI_Init(int *argc, char ***argv) {
 	/*!
 	 * User can overwrite the config file name by environment variable
 	 */
-	if (henv.conf_file_name!=NULL)
+	if (henv.conf_file_name != NULL)
 		HMPI_CONF_FILE_NAME = henv.conf_file_name;
 
 	int comm_size;
@@ -79,10 +79,10 @@ int HMPI_Init(int *argc, char ***argv) {
 	int name_len;
 	MPI_Get_processor_name(processor_name, &name_len);
 
-	fprintf(stdout, "[%d, %s] -> fayil=%s\n", rank, processor_name, HMPI_CONF_FILE_NAME);
+	fprintf(stdout, "[%d, %s] -> fayil=%s\n", rank, processor_name,
+			HMPI_CONF_FILE_NAME);
 
 	//
-
 
 	int should_generate_config = 0;
 #ifdef HMPI_GENERATE_CONFIG
@@ -93,10 +93,39 @@ int HMPI_Init(int *argc, char ***argv) {
 		should_generate_config = henv.generate_config;
 	}
 
+	int hmpi_operation = op_all;
+#ifdef HMPI_OPID
+	hmpi_operation = strtol(HMPI_OPID, NULL, 10);
+#endif
+
+	if (getenv("HMPI_OPID") != NULL) {
+		hmpi_operation = strtol(getenv("HMPI_OPID"), NULL, 10);
+	}
+
+	if (hmpi_operation < op_bcast || hmpi_operation > op_all) {
+		fprintf(stdout,
+				"Wrong HMPI operation id given via HMPI_OPID environment.\n"
+				"Allowed operation ids: [0: bcast, 1: reduce, 2: allreduce, "
+				"3: scatter, 4: gather, 5: all the previous collectives]\n");
+		MPI_Abort(MPI_COMM_WORLD, -1); //TODO: -1
+	}
+
 	if (should_generate_config) {
-		save_hmpi_optimal_groups(henv.min_msg, henv.max_msg, henv.msg_stride,
-				henv.root, MPI_COMM_WORLD, henv.num_levels, henv.bcast_alg_in,
-				henv.bcast_alg_out, op_bcast, 0); //TODO: 0
+		if (hmpi_operation != op_all)
+			save_hmpi_optimal_groups(henv.min_msg, henv.max_msg,
+					henv.msg_stride, henv.root, MPI_COMM_WORLD, henv.num_levels,
+					henv.bcast_alg_in, henv.bcast_alg_out, hmpi_operation, 0); //TODO: 0
+		else {
+			int op = op_bcast;
+			for (; op < op_all; op++) {
+				save_hmpi_optimal_groups(henv.min_msg, henv.max_msg,
+						henv.msg_stride, henv.root, MPI_COMM_WORLD,
+						henv.num_levels, henv.bcast_alg_in, henv.bcast_alg_out,
+						op, 0); //TODO: 0
+			}
+
+		}
+
 	}
 
 	return rc;

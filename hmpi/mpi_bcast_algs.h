@@ -7,19 +7,17 @@
 #define Bcast_TAG 904920477 
 #define bcast_linear_segment_size 1024
 
-typedef enum hpnla_bcast_algo {
+typedef enum bcast_algo {
+    native, //0
     lin,
-    binary, // 1
+    binary,
     flat,
     binomial,
-    original, //4
     scatter_lr_allgather,
     scatter_rd_allgather,
-    binomial_mpich, //7,
+    binomial_mpich,
     pipelined_linear // 8
-} hpnla_bcast_algo;
-
-
+} bcast_algo;
 
 
 void bcast_scatter_lr_allgather(void * buff, int count, MPI_Datatype data_type,
