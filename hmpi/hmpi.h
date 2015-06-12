@@ -32,7 +32,7 @@
 #define _unused(x) ((void)x)
 
 typedef enum hmpi_operations {
-	op_bcast, op_reduce, op_allreduce, op_scatter, op_gather, op_all
+	op_bcast, op_reduce, /*op_allreduce,*/ op_scatter, op_gather, op_all
 } hmpi_operations;
 
 /*! hmpi configuration parameters */
@@ -43,6 +43,7 @@ typedef struct hmpi_conf {
 	int message_size;
 	int alg_in;
 	int alg_out;
+	hmpi_operations op_id;
 } hmpi_conf;
 
 /*! hmpi algorithm parameters */
@@ -66,7 +67,7 @@ typedef struct hmpi_group_data {
 	int msg_size;
 } hmpi_group_data;
 
-extern const char *HMPI_CONF_FILE_NAME;
+extern const char *hmpi_conf_file_name;
 extern hmpi_env henv;
 extern hmpi_group_data* group_data;
 

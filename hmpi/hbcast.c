@@ -97,8 +97,8 @@ int hierarchical_broadcast(void *buffer, int count, MPI_Datatype datatype,
     } else if (!validate_groups(num_groups, comm_size)) {
         /*TODO*/
     	hpnla_bcast(buffer, count, datatype, root, comm, alg_in);
-    	if (!rank)
-    		fprintf(stdout, "Wrong number of groups: switching back to MPI_bcast: %d\n", num_groups);
+    	//if (!rank)
+    	//	fprintf(stdout, "Wrong number of groups: switching back to MPI_bcast: %d\n", num_groups);
     }
 
     return MPI_SUCCESS;
@@ -113,7 +113,7 @@ int HMPI_Bcast(void *buffer, int count, MPI_Datatype datatype,
 	/*
 	 * TODO: Are you sure all processes have to open config file for read?
 	 */
-	hmpi_conf my_conf = hmpi_get_my_conf(comm, msg_size, root, HMPI_CONF_FILE_NAME, op_bcast);
+	hmpi_conf my_conf = hmpi_get_my_conf(comm, msg_size, root, hmpi_conf_file_name, op_bcast);
 
 	return hierarchical_broadcast(buffer, count, datatype, root, comm, my_conf.num_groups,
 			my_conf.num_levels, my_conf.alg_in, my_conf.alg_out);

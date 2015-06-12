@@ -6,6 +6,7 @@
  */
 
 #include "optimal_groups.h"
+#include "utils.h"
 #include "MPIBlib/benchmarks/mpib.h"
 
 #include <stdlib.h>
@@ -69,6 +70,10 @@ int get_hmpi_group(int msg_size, int root, MPI_Comm comm_world, int num_levels,
 				container = (MPIB_coll_container*) MPIB_HReduce_container_alloc(
 						hierarchical_reduce, g, num_levels, alg_in, alg_out);
 				break;
+			/*case op_allreduce:
+				container = (MPIB_coll_container*) MPIB_HAllreduce_container_alloc(
+										hierarchical_allreduce, g, num_levels, alg_in, alg_out);
+				break; */
 			case op_scatter:
 				container =
 						(MPIB_coll_container*) MPIB_HScatter_container_alloc(
@@ -108,7 +113,8 @@ int get_hmpi_group(int msg_size, int root, MPI_Comm comm_world, int num_levels,
  */
 void save_hmpi_optimal_groups(int min_msg_size, int max_msg_size,
 		int msg_stride, int root, MPI_Comm comm_world, int num_levels,
-		int alg_in, int alg_out, hmpi_operations op_id, int use_one_proc) {
+		int alg_in, int alg_out, hmpi_operations op_id, int use_one_proc,
+		const char* file_name) {
 	int p;
 	int rank;
 	int comm_size;
@@ -124,20 +130,24 @@ void save_hmpi_optimal_groups(int min_msg_size, int max_msg_size,
 		p_end = 1;
 	}
 
+	char* config_file_name = create_file_name(file_name, op_id);
 	if (is_same_config(min_msg_size, max_msg_size, msg_stride,
-			comm_size - p_end + 1, comm_size, HMPI_CONF_FILE_NAME))
+			comm_size - p_end + 1, comm_size, op_id, config_file_name))
 		return;
 
 	FILE* fp;
-	fp = fopen(HMPI_CONF_FILE_NAME, "w"); //TODO:  should I overwrite?
+	fp = fopen(config_file_name, "w"); //TODO:  should I overwrite?
+	free(config_file_name);
+
 	fprintf(fp,
-			"#num_procs\tnum_groups\tnum_levels\tmsg_size\talg_in\talg_out\n");
+			"#num_procs\tnum_groups\tnum_levels\tmsg_size\talg_in\talg_out\top_id\n");
 	if (fp == NULL) {
 		fprintf(stdout, "Try to open the configuration file %s\n",
-				HMPI_CONF_FILE_NAME);
+				hmpi_conf_file_name);
 		perror("fopen");
 		MPI_Abort(MPI_COMM_WORLD, 201);
 	}
+
 
 	for (p = 0; p < p_end; p++) {
 		MPI_Comm sub_comm;
@@ -148,12 +158,12 @@ void save_hmpi_optimal_groups(int min_msg_size, int max_msg_size,
 
 			int msg = 0;
 			for (msg = min_msg_size; msg <= max_msg_size; msg *= msg_stride) {
-
 				int group = get_hmpi_group(msg, root, sub_comm, num_levels,
 						alg_in, alg_out, op_id);
+
 				if (group != -1) {
-					fprintf(fp, "%d\t%d\t%d\t%d\t%d\t%d\n", new_size, group, 1,
-							msg, 0, 0);
+					fprintf(fp, "%d\t%d\t%d\t%d\t%d\t%d\t%d\n", new_size, group, 1,
+							msg, 0, 0, op_id);
 				}
 			}
 

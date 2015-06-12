@@ -77,7 +77,7 @@ int HMPI_Scatter(void *sendbuf, int sendcnt, MPI_Datatype sendtype,
 	int msg_size = extent * sendcnt;
 
 	hmpi_conf my_conf = hmpi_get_my_conf(comm, msg_size, root,
-			HMPI_CONF_FILE_NAME, op_scatter);
+			hmpi_conf_file_name, op_scatter);
 
 	return hierarchical_scatter(sendbuf, sendcnt, sendtype, recvbuf, recvcnt,
 			recvtype, root, comm, my_conf.num_groups, my_conf.num_levels, my_conf.alg_in, my_conf.alg_out);

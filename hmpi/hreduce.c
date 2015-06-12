@@ -115,7 +115,7 @@ int HMPI_Reduce(void *snd_buffer, void* rcv_buffer, int count,
 	 * TODO: Are you sure all processes have to open config file for read?
 	 */
 	hmpi_conf my_conf = hmpi_get_my_conf(comm, msg_size, root,
-			HMPI_CONF_FILE_NAME, op_reduce);
+			hmpi_conf_file_name, op_reduce);
 
 	return hierarchical_reduce(snd_buffer, rcv_buffer, count, datatype, op,
 			root, comm, my_conf.num_groups, my_conf.num_levels, my_conf.alg_in,

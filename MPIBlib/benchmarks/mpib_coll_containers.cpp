@@ -56,6 +56,16 @@ extern "C" MPIB_coll_container* MPIB_HReduce_container_alloc(
 			alg_out);
 }
 
+/*
+extern "C" MPIB_coll_container* MPIB_HAllreduce_container_alloc(
+		MPIB_HAllreduce hallreduce, int num_groups, int num_levels, int alg_in,
+		int alg_out) {
+	return new MPIB_HAllreduce_container(hallreduce, num_groups, num_levels, alg_in,
+			alg_out);
+}
+
+*/
+
 extern "C" MPIB_coll_container* MPIB_HGather_container_alloc(
 		MPIB_HGather hgather, int num_groups, int num_levels, int alg_in,
 		int alg_out) {

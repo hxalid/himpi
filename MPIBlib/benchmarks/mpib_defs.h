@@ -66,6 +66,10 @@ typedef int (*MPIB_HReduce)(void *snd_buffer, void* rcv_buffer, int count,
 		MPI_Datatype datatype, MPI_Op op, int root, MPI_Comm comm,
 		int num_groups, int num_levels, int alg_in, int alg_out);
 
+typedef int (*MPIB_HAllreduce)(void *snd_buffer, void* rcv_buffer, int count,
+		MPI_Datatype datatype, MPI_Op op, MPI_Comm comm,
+		int num_groups, int num_levels, int alg_in, int alg_out);
+
 typedef int (*MPIB_HScatter)(void *sendbuf, int sendcnt, MPI_Datatype sendtype,
 		void *recvbuf, int recvcnt, MPI_Datatype recvtype, int root,
 		MPI_Comm comm, int num_groups, int num_levels, int alg_in, int alg_out);

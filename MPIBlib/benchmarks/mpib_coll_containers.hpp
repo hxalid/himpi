@@ -349,7 +349,7 @@ public:
 	}
 };
 
-/*! HBcast container */
+/*! HReduce container */
 class MPIB_HReduce_container: public MPIB_coll_container {
 private:
 	MPIB_HReduce hreduce;

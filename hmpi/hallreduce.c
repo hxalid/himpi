@@ -104,8 +104,8 @@ int HMPI_Allreduce(void *sendbuf, void* recvbuf, int count,
 	/*
 	 * TODO: Are you sure all processes have to open config file for read?
 	 */
-	hmpi_conf my_conf = hmpi_get_my_conf(comm, msg_size, HMPI_ROOT_PROC,
-			HMPI_CONF_FILE_NAME, op_allreduce);
+	hmpi_conf my_conf; /* = hmpi_get_my_conf(comm, msg_size, HMPI_ROOT_PROC,
+			hmpi_conf_file_name, op_allreduce); */
 
 	return hierarchical_allreduce(sendbuf, recvbuf, count, datatype, op,
 			comm, my_conf.num_groups, my_conf.num_levels, my_conf.alg_in,
