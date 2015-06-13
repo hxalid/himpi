@@ -104,7 +104,7 @@ hmpi_conf find_config(hmpi_conf* confs, int num_procs, int msg_size,
 }
 
 int is_same_config(int min_msg_size, int max_msg_size, int msg_stride,
-		int p_start, int p_end, hmpi_operations op_id, const char* filename) {
+		int comm_size, hmpi_operations op_id, const char* filename) {
 	int num_lines;
 	hmpi_conf* confs = hmpi_get_conf_all(filename, &num_lines);
 	int p = 0, m = min_msg_size;
@@ -114,17 +114,22 @@ int is_same_config(int min_msg_size, int max_msg_size, int msg_stride,
 		searched_lines++;
 	}
 
-	if (num_lines != (p_end - p_start + 1) * searched_lines) {
+	int num_procs = 0;
+	for (p = HMPI_MIN_PROCS; p <= comm_size; p*=2) {
+		num_procs++;
+	}
+
+	if (num_lines != num_procs * searched_lines) {
 		fprintf(stdout,
-				"Should generate new config file. p_start=%d, p_end: %d, searched_lines: %d num_lines: %d\n",
-				p_start, p_end, searched_lines, num_lines);
+				"Should generate new config file. num_procs=%d, comm_size: %d, searched_lines: %d num_lines: %d\n",
+				num_procs, comm_size, searched_lines, num_lines);
 		return 0;
 	}
 
 	int matched_lines = 0;
 	if (confs != NULL) {
 		int i = 0;
-		for (p = p_end; p >= p_start; p--) {
+		for (p = comm_size; p >= HMPI_MIN_PROCS; p/=2) {
 			for (m = min_msg_size; m <= max_msg_size; m *= msg_stride) {
 				if ((confs[i].num_procs == p && confs[i].message_size == m)
 						&& confs[i].op_id == op_id) {

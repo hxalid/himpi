@@ -24,3 +24,6 @@ hmpi_conf hmpi_get_my_conf(MPI_Comm comm, int msg_size, int root,
 hmpi_conf* hmpi_get_conf_all(const char* filename, int* num_lines);
 
 char* create_file_name(char* file_name, int op_id);
+
+int is_same_config(int min_msg_size, int max_msg_size, int msg_stride,
+		int comm_size, hmpi_operations op_id, const char* filename);

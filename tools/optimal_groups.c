@@ -125,14 +125,14 @@ void save_hmpi_optimal_groups(int min_msg_size, int max_msg_size,
 	/*!
 	 * Find optimal number of groups for p\in[HMPI_MIN_PROCS+1, comm_size]
 	 */
-	int p_end = comm_size - HMPI_MIN_PROCS;
+	int p_start = HMPI_MIN_PROCS;
 	if (use_one_proc) {
-		p_end = 1;
+		p_start = comm_size;
 	}
 
 	char* config_file_name = create_file_name(file_name, op_id);
 	if (is_same_config(min_msg_size, max_msg_size, msg_stride,
-			comm_size - p_end + 1, comm_size, op_id, config_file_name))
+			comm_size, op_id, config_file_name))
 		return;
 
 	FILE* fp;
@@ -149,9 +149,10 @@ void save_hmpi_optimal_groups(int min_msg_size, int max_msg_size,
 	}
 
 
-	for (p = 0; p < p_end; p++) {
+	for (p = comm_size; p >= p_start; p/=2) {
+		//TODO:  do we need all number of processes? May be we can use only pow of 2 number of processes.
 		MPI_Comm sub_comm;
-		MPI_Comm_split(comm_world, (comm_size - rank > p) ? 0 : MPI_UNDEFINED,
+		MPI_Comm_split(comm_world, (rank<p) ? 0 : MPI_UNDEFINED,
 				rank, &sub_comm);
 		if (sub_comm != MPI_COMM_NULL) {
 			MPI_Comm_size(sub_comm, &new_size);
@@ -164,6 +165,7 @@ void save_hmpi_optimal_groups(int min_msg_size, int max_msg_size,
 				if (group != -1) {
 					fprintf(fp, "%d\t%d\t%d\t%d\t%d\t%d\t%d\n", new_size, group, 1,
 							msg, 0, 0, op_id);
+					fflush(fp);
 				}
 			}
 
