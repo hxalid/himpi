@@ -48,6 +48,9 @@ MPIB_coll_container* MPIB_HBcast_container_alloc(MPIB_HBcast hbcast,
 MPIB_coll_container* MPIB_HReduce_container_alloc(MPIB_HReduce hreduce,
 		int num_groups, int num_levels, int alg_in, int alg_out);
 
+MPIB_coll_container* MPIB_HAllreduce_container_alloc(MPIB_HAllreduce hallreduce,
+		int num_groups, int num_levels, int alg_in, int alg_out);
+
 MPIB_coll_container* MPIB_HGather_container_alloc(MPIB_HGather hgather,
 		int num_groups, int num_levels, int alg_in, int alg_out);
 

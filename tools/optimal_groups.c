@@ -70,10 +70,10 @@ int get_hmpi_group(int msg_size, int root, MPI_Comm comm_world, int num_levels,
 				container = (MPIB_coll_container*) MPIB_HReduce_container_alloc(
 						hierarchical_reduce, g, num_levels, alg_in, alg_out);
 				break;
-			/*case op_allreduce:
+			case op_allreduce:
 				container = (MPIB_coll_container*) MPIB_HAllreduce_container_alloc(
 										hierarchical_allreduce, g, num_levels, alg_in, alg_out);
-				break; */
+				break;
 			case op_scatter:
 				container =
 						(MPIB_coll_container*) MPIB_HScatter_container_alloc(

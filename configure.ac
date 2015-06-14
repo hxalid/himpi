@@ -20,7 +20,7 @@ AC_PROG_LIBTOOL
 AC_PROG_INSTALL
 
 # Used to install python scripts with the specified python version
-AM_PATH_PYTHON([2.7])
+AM_PATH_PYTHON([2.6])
 
 
 AC_MSG_CHECKING([whether debug is enabled])

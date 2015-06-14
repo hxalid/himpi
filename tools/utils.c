@@ -141,7 +141,7 @@ int is_same_config(int min_msg_size, int max_msg_size, int msg_stride,
 	}
 
 	if (num_lines != 0 && matched_lines == num_lines) {
-		fprintf(stdout, "The same config file exists...\n");
+		fprintf(stdout, "The same config file [%s] exists...\n", filename);
 		return 1;
 	} else {
 		fprintf(stdout,
@@ -169,7 +169,7 @@ hmpi_conf hmpi_get_my_conf(MPI_Comm comm, int msg_size, int root,
 	if (!config_found) {
 		save_hmpi_optimal_groups(msg_size, msg_size, henv.msg_stride, root,
 				comm, henv.num_levels, henv.bcast_alg_in, henv.bcast_alg_out,
-				op_id, 1, filename); //TODO
+				op_id, 1, filename); //TODO: 1
 		MPI_Barrier(comm);
 
 		confs = hmpi_get_conf_all(conf_file_name, &num_lines);
@@ -203,8 +203,9 @@ void hmpi_print_conf(FILE* file, int* num_procs, int* num_groups,
 }
 
 char* create_file_name(char* file_name, int op_id) {
-	char op_str[3];
-	snprintf(op_str, 3, "-%d", op_id);
+	const int op_str_length = 3;
+	char op_str[op_str_length];
+	snprintf(op_str, op_str_length, "-%d", op_id);
 	size_t file_length = strlen(file_name) + strlen(op_str) + 1;
 	char* conf_file_name = (char*)malloc(file_length);
 	assert(conf_file_name != NULL);
