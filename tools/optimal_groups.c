@@ -14,6 +14,10 @@
 
 hmpi_group_data* group_data;
 
+/*!
+ *  This function is used to find the requested
+ *  factor of the given process/number.
+ */
 int get_specific_factor(int num_procs, int factor_idx) {
 	int g = 0;
 	int idx_counter = 0;
@@ -33,15 +37,23 @@ int get_specific_factor(int num_procs, int factor_idx) {
 	return factor;
 }
 
+/*!
+ * \param msg_size a message size
+ * \param root rank of the root process
+ * \param comm_world parent communicator from which all sub-communicators will be created
+ * \param num_levels number of hierarchies
+ * \param alg_in collective algorithm id to use inside groups
+ * \param alg_out collective algorithms id to use among groups
+ * \param op_id hmpi collective operation id to use. IDs are defined in hmpi_operation in hmpi.h
+ * \return optimal number of groups.
+ */
 int get_hmpi_group(int msg_size, int root, MPI_Comm comm_world, int num_levels,
 		int alg_in, int alg_out, hmpi_operations op_id) {
 	MPIB_result result;
 	MPIB_precision precision;
 	MPIB_getopt_precision_default(&precision);
 
-	int my_rank;
 	int num_procs;
-	MPI_Comm_rank(comm_world, &my_rank);
 	MPI_Comm_size(comm_world, &num_procs);
 
 	int g, num_groups = 0;

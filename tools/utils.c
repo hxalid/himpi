@@ -72,6 +72,11 @@ hmpi_conf* hmpi_get_conf_all(const char* filename, int* num_lines) {
 	return confs;
 }
 
+/*!
+ * \param num_procs number of MPI processes
+ * \param msg_size the message size in HMPI collective operation
+ * \return HMPI default configuration values
+ */
 hmpi_conf default_config(int num_procs, int msg_size) {
 	hmpi_conf config;
 	config.num_procs = num_procs;
@@ -84,6 +89,16 @@ hmpi_conf default_config(int num_procs, int msg_size) {
 	return config;
 }
 
+/*!
+ * \param confs hmpi configuration parameters
+ * \param num_procs number of processes for which the configuration is being searched
+ * \param msg_size the message size for which the configuration is being searched
+ * \param op_id HMPI collective operation id
+ * \param num_lines number of lines in the configuration file
+ * \param config_found if configuration exists for the given number of process
+ * and message size set it to one otherwise set it to zero
+ * \return if config found return it otherwise return default config
+ */
 hmpi_conf find_config(hmpi_conf* confs, int num_procs, int msg_size,
 		hmpi_operations op_id, int num_lines, int* config_found) {
 	hmpi_conf my_conf = default_config(num_procs, msg_size);
@@ -103,6 +118,16 @@ hmpi_conf find_config(hmpi_conf* confs, int num_procs, int msg_size,
 	return my_conf;
 }
 
+/*!
+ * \param min_msg_size minimum message size in the configuration
+ * \param max_msg_size maximum message size in the configuration
+ * \param msg_stride the stride to get all message sizes within the min and max
+ * \param comm_size MPI communicator size
+ * \param op_id HMPI collective operation id
+ * \param filename filename to check if requested configuration exists in it
+ * \return if the file contains the configuration for the given number of processes
+ * and message size then return one otherwise zero
+ */
 int is_same_config(int min_msg_size, int max_msg_size, int msg_stride,
 		int comm_size, hmpi_operations op_id, const char* filename) {
 	int num_lines;
@@ -115,7 +140,7 @@ int is_same_config(int min_msg_size, int max_msg_size, int msg_stride,
 	}
 
 	int num_procs = 0;
-	for (p = HMPI_MIN_PROCS; p <= comm_size; p*=2) {
+	for (p = HMPI_MIN_PROCS; p <= comm_size; p *= 2) {
 		num_procs++;
 	}
 
@@ -129,7 +154,7 @@ int is_same_config(int min_msg_size, int max_msg_size, int msg_stride,
 	int matched_lines = 0;
 	if (confs != NULL) {
 		int i = 0;
-		for (p = comm_size; p >= HMPI_MIN_PROCS; p/=2) {
+		for (p = comm_size; p >= HMPI_MIN_PROCS; p /= 2) {
 			for (m = min_msg_size; m <= max_msg_size; m *= msg_stride) {
 				if ((confs[i].num_procs == p && confs[i].message_size == m)
 						&& confs[i].op_id == op_id) {
@@ -150,6 +175,7 @@ int is_same_config(int min_msg_size, int max_msg_size, int msg_stride,
 		return 0;
 	}
 }
+
 
 hmpi_conf hmpi_get_my_conf(MPI_Comm comm, int msg_size, int root,
 		const char* filename, hmpi_operations op_id) {
@@ -207,10 +233,9 @@ char* create_file_name(char* file_name, int op_id) {
 	char op_str[op_str_length];
 	snprintf(op_str, op_str_length, "-%d", op_id);
 	size_t file_length = strlen(file_name) + strlen(op_str) + 1;
-	char* conf_file_name = (char*)malloc(file_length);
+	char* conf_file_name = (char*) malloc(file_length);
 	assert(conf_file_name != NULL);
-	snprintf(conf_file_name, file_length, "%s%s",  file_name, op_str);
+	snprintf(conf_file_name, file_length, "%s%s", file_name, op_str);
 	return conf_file_name;
 }
-
 

@@ -74,16 +74,22 @@ int HMPI_Init(int *argc, char ***argv) {
 	hmpi_operation = strtol(HMPI_OPID, NULL, 10);
 #endif
 
+	int is_env_value = 0;
 	if (getenv("HMPI_OPID") != NULL) {
 		hmpi_operation = strtol(getenv("HMPI_OPID"), NULL, 10);
 	}
 
 	if (hmpi_operation < op_bcast || hmpi_operation > op_all) {
-		fprintf(stdout,
-				"Wrong HMPI operation id given via HMPI_OPID environment.\n"
-				"Allowed operation ids: [0: bcast, 1: reduce, 2: allreduce, "
-				"3: scatter, 4: gather, 5: all the previous collectives]\n");
-		MPI_Abort(MPI_COMM_WORLD, -1); //TODO: -1
+		int rank;
+		MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+		if (rank == 0)
+			fprintf(stdout,
+					"Wrong HMPI operation id: %d given via configuration or HMPI_OPID environment. "
+					"Using %d instead\n"
+					"Allowed operation ids: [0: bcast, 1: reduce, 2: allreduce, "
+					"3: scatter, 4: gather, 5: all the previous collectives]\n", hmpi_operation, op_all);
+		hmpi_operation = op_all;
+		//MPI_Abort(MPI_COMM_WORLD, -1); //TODO: -1
 	}
 
 	int comm_size;

@@ -1,5 +1,5 @@
 AC_PREREQ(2.59)
-AC_INIT([hmpi], [1.0.0], [http://hcl.ucd.ie/project/hmpi])
+AC_INIT([himpi], [1.0.0], [http://hcl.ucd.ie/project/hmpi])
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_AUX_DIR([build-aux])
@@ -173,16 +173,16 @@ esac
 AC_CONFIG_FILES([
 	Makefile
 	tools/Makefile
-	hmpi/Makefile
+	himpi/Makefile
 	tests/Makefile
-    tests/mpi/Makefile
-    tests/linear_algebra/Makefile
+	tests/mpi/Makefile
+        tests/linear_algebra/Makefile
 ])
 
 AC_CONFIG_SUBDIRS([MPIBlib])
 
 DX_PS_FEATURE([OFF])
-DX_INIT_DOXYGEN(hmpi)
+DX_INIT_DOXYGEN(himpi)
 
 #define([svn_revision], esyscmd([sh -c "svnversion -n"]))
 dnl

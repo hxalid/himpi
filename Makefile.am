@@ -1,4 +1,4 @@
-SUBDIRS = tools hmpi MPIBlib tests 
+SUBDIRS = tools himpi MPIBlib tests 
 
 include aminclude.am
 EXTRA_DIST = \
