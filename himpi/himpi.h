@@ -70,6 +70,12 @@ typedef struct himpi_group_data {
 extern const char *himpi_conf_file_name;
 extern himpi_env henv;
 extern himpi_group_data* group_data;
+extern int himpi_debug;
+extern int himpi_my_rank_world;
+extern int himpi_num_ranks_world;
+/* According to POSIX standard hostname should not exceed 255 bytes*/
+extern char himpi_my_hostname[256];
+extern MPI_Comm himpi_comm_world;
 
 int validate_input(int num_groups, int num_procs);
 

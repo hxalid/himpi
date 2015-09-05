@@ -1,6 +1,47 @@
 #include "utils.h"
 #include <string.h>
 
+/* variable length args */
+#include <stdarg.h>
+#include <errno.h>
+
+/* print message to stderr */
+void himpi_err(const char *fmt, ...) {
+	va_list argp;
+	fprintf(stderr, "HiMPI ERROR: rank %d on %s: ", himpi_my_rank_world,
+			himpi_my_hostname);
+	va_start(argp, fmt);
+	vfprintf(stderr, fmt, argp);
+	va_end(argp);
+	fprintf(stderr, "\n");
+}
+
+/* print message to stdout if himpi_debug is set and it is >= level */
+void himpi_dbg(int level, const char *fmt, ...) {
+	va_list argp;
+	if (level == 0 || (himpi_debug > 0 && himpi_debug >= level)) {
+		fprintf(stdout, "HiMPI: rank %d on %s: ", himpi_my_rank_world,
+				himpi_my_hostname);
+		va_start(argp, fmt);
+		vfprintf(stdout, fmt, argp);
+		va_end(argp);
+		fprintf(stdout, "\n");
+	}
+}
+
+/* print abort message and call MPI_Abort to kill run */
+void himpi_abort(int rc, const char *fmt, ...) {
+	va_list argp;
+	fprintf(stderr, "HiMPI ABORT: rank %d on %s: ", himpi_my_rank_world,
+			himpi_my_hostname);
+	va_start(argp, fmt);
+	vfprintf(stderr, fmt, argp);
+	va_end(argp);
+	fprintf(stderr, "\n");
+
+	MPI_Abort(MPI_COMM_WORLD, 0);
+}
+
 int validate_groups(int num_groups, int num_procs) {
 	if (num_groups <= 1 || num_groups >= num_procs)
 		return 0;
@@ -26,17 +67,15 @@ double hdnla_conf_int(double cl, int reps, double* T) {
 
 himpi_conf* himpi_get_conf_all(const char* filename, int* num_lines) {
 	if (filename == NULL) {
-		fprintf(stderr, "Error filename null %s\n", __func__);
-		MPI_Abort(MPI_COMM_WORLD, 200);
+		himpi_abort(-1, "himpi_get_conf_all: filename is null @ %s:%d",
+			__FILE__, __LINE__);
 	}
 
 	himpi_conf* confs = NULL;
 	FILE* stream;
 	stream = fopen(filename, "r");
 	if (stream == NULL) {
-		fprintf(stderr, "Can't open the configuration file %s\n", filename);
-		//perror("fopen");
-		//MPI_Abort(MPI_COMM_WORLD, 201);
+		himpi_err("Can't open the configuration file %s\n", filename);
 		*num_lines = 0;
 		return confs;
 	}
@@ -58,9 +97,8 @@ himpi_conf* himpi_get_conf_all(const char* filename, int* num_lines) {
 				&confs[n].message_size, &confs[n].alg_in, &confs[n].alg_out,
 				&confs[n].op_id, &pos);
 		if (err < 6) {
-			fprintf(stderr, "Error reading line%d: \"%s\" err:%d in %s\n", n,
-					line, err, __func__);
-			MPI_Abort(MPI_COMM_WORLD, 204);
+			himpi_abort(-1, "%s: Error reading line: %d \"%s\" err:%d @ %s:%d",
+						__func__, __FILE__, __LINE__);
 		}
 
 		n++;
@@ -176,7 +214,6 @@ int is_same_config(int min_msg_size, int max_msg_size, int msg_stride,
 	}
 }
 
-
 himpi_conf himpi_get_my_conf(MPI_Comm comm, int msg_size, int root,
 		const char* filename, himpi_operations op_id) {
 	int num_lines;
@@ -194,8 +231,8 @@ himpi_conf himpi_get_my_conf(MPI_Comm comm, int msg_size, int root,
 
 	if (!config_found) {
 		save_himpi_optimal_groups(msg_size, msg_size, henv.msg_stride, root,
-				comm, henv.num_levels, henv.bcast_alg_in, henv.bcast_alg_out,
-				op_id, 1, filename); //TODO: 1
+				henv.num_levels, henv.bcast_alg_in, henv.bcast_alg_out, op_id,
+				1, filename); //TODO: 1
 		MPI_Barrier(comm);
 
 		confs = himpi_get_conf_all(conf_file_name, &num_lines);

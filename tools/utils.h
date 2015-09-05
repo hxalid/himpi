@@ -27,3 +27,7 @@ char* create_file_name(char* file_name, int op_id);
 
 int is_same_config(int min_msg_size, int max_msg_size, int msg_stride,
 		int comm_size, himpi_operations op_id, const char* filename);
+
+void himpi_err(const char *fmt, ...);
+void himpi_dbg(int level, const char *fmt, ...);
+void himpi_abort(int rc, const char *fmt, ...);

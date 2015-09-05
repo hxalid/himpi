@@ -12,6 +12,11 @@
 
 const char *himpi_conf_file_name;
 himpi_env henv;
+int himpi_debug = 0;
+int himpi_my_rank_world = MPI_PROC_NULL;
+int himpi_num_ranks_world;
+char himpi_my_hostname[256] = "";
+MPI_Comm himpi_comm_world = MPI_COMM_NULL;
 
 void init_himpi_env(void) {
 	henv.bcast_alg_in =
@@ -34,7 +39,8 @@ void init_himpi_env(void) {
 					HIMPI_MSG_STRIDE;
 	henv.root =
 			(getenv("HIMPI_ROOT_PROC") != NULL) ?
-					strtol(getenv("HIMPI_ROOT_PROC"), NULL, 10) : HIMPI_ROOT_PROC;
+					strtol(getenv("HIMPI_ROOT_PROC"), NULL, 10) :
+					HIMPI_ROOT_PROC;
 	henv.num_levels =
 			(getenv("HIMPI_NUM_LEVELS") != NULL) ?
 					strtol(getenv("HIMPI_NUM_LEVELS"), NULL, 10) :
@@ -56,11 +62,26 @@ int HiMPI_Init(int *argc, char ***argv) {
 		return rc;
 	}
 
-#ifdef HiMPI_GROUP_CONFIG
-	himpi_conf_file_name = HiMPI_GROUP_CONFIG;
+	MPI_Comm_dup(MPI_COMM_WORLD, &himpi_comm_world);
+	if (himpi_comm_world == MPI_COMM_NULL) {
+		himpi_abort(-1,
+				"himpi_init: Failed to duplicate MPI_COMM_WORLD @ %s:%d",
+				__FILE__, __LINE__);
+	}
+
+	MPI_Comm_size(himpi_comm_world, &himpi_num_ranks_world);
+	MPI_Comm_rank(himpi_comm_world, &himpi_my_rank_world);
+
+	/* get my hostname */
+	if (gethostname(himpi_my_hostname, sizeof(himpi_my_hostname)) != 0) {
+		himpi_abort(-1, "himpi_init: Failed to get hostname @ %s:%d",
+		__FILE__, __LINE__);
+	}
+
+#ifdef HIMPI_GROUP_CONFIG
+	himpi_conf_file_name = HIMPI_GROUP_CONFIG;
 #else
 	himpi_conf_file_name = HIMPI_CONF_FILE;
-	//fprintf(stdout, "No group config file specified, g=sqrt(p) will be used\n");
 #endif
 
 	/*!
@@ -74,63 +95,54 @@ int HiMPI_Init(int *argc, char ***argv) {
 	himpi_operation = strtol(HIMPI_OPID, NULL, 10);
 #endif
 
-	int is_env_value = 0;
+	if (getenv("HIMPI_DEBUG") != NULL) {
+		himpi_debug = strtol(getenv("HIMPI_DEBUG"), NULL, 10);
+	}
+
 	if (getenv("HIMPI_OPID") != NULL) {
 		himpi_operation = strtol(getenv("HIMPI_OPID"), NULL, 10);
 	}
 
 	if (himpi_operation < op_bcast || himpi_operation > op_all) {
-		int rank;
-		MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-		if (rank == 0)
-			fprintf(stdout,
+		if (himpi_my_rank_world == 0)
+			himpi_dbg(0,
 					"Wrong HiMPI operation id: %d given via configuration or HiMPI_OPID environment. "
-					"Using %d instead\n"
-					"Allowed operation ids: [0: bcast, 1: reduce, 2: allreduce, "
-					"3: scatter, 4: gather, 5: all the previous collectives]\n", himpi_operation, op_all);
+							"Using %d instead\n"
+							"Allowed operation ids: [0: bcast, 1: reduce, 2: allreduce, "
+							"3: scatter, 4: gather, 5: all the previous collectives]\n",
+					himpi_operation, op_all);
 		himpi_operation = op_all;
 		//MPI_Abort(MPI_COMM_WORLD, -1); //TODO: -1
 	}
 
-	int comm_size;
-	MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
-
-	int rank;
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
-	//TODO: this part should be enabled/disabled by some debug level
-	char processor_name[MPI_MAX_PROCESSOR_NAME];
-	int name_len;
-	MPI_Get_processor_name(processor_name, &name_len);
-
-	fprintf(stdout, "[%d, %s] -> fayil=%s\n", rank, processor_name,
-			himpi_conf_file_name);
-
-	//
-
-	int should_generate_config = 0;
+	int generate_config = 0;
 #ifdef HMPI_GENERATE_CONFIG
-	should_generate_config = 1;
+	generate_config = 1;
 #endif
 
 	if (getenv("HIMPI_GENERATE_CONFIG") != NULL) {
-		should_generate_config = henv.generate_config;
+		generate_config = henv.generate_config;
 	}
 
+	himpi_dbg(1,
+			"HiMPI_Init: initialization is continuing with a call to save_himpi_optimal_groups. "
+					"himpi_operation: %d, rank: %d (%d), hostname: %s",
+			himpi_operation, himpi_my_rank_world, himpi_num_ranks_world,
+			himpi_my_hostname);
 
-	if (should_generate_config) {
+	if (generate_config) {
 		if (himpi_operation != op_all) {
 			save_himpi_optimal_groups(henv.min_msg, henv.max_msg,
-					henv.msg_stride, henv.root, MPI_COMM_WORLD, henv.num_levels,
-					henv.bcast_alg_in, henv.bcast_alg_out, himpi_operation, 0, himpi_conf_file_name); //TODO: 0
-		}
-		else {
+					henv.msg_stride, henv.root, henv.num_levels,
+					henv.bcast_alg_in, henv.bcast_alg_out, himpi_operation, 0,
+					himpi_conf_file_name); //TODO: 0
+		} else {
 			int op = op_bcast;
 			for (; op < op_all; op++) {
 				save_himpi_optimal_groups(henv.min_msg, henv.max_msg,
-						henv.msg_stride, henv.root, MPI_COMM_WORLD,
-						henv.num_levels, henv.bcast_alg_in, henv.bcast_alg_out,
-						op, 0, himpi_conf_file_name); //TODO: 0
+						henv.msg_stride, henv.root, henv.num_levels,
+						henv.bcast_alg_in, henv.bcast_alg_out, op, 0,
+						himpi_conf_file_name); //TODO: 0
 			}
 
 		}

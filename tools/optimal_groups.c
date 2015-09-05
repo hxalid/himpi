@@ -83,8 +83,10 @@ int get_himpi_group(int msg_size, int root, MPI_Comm comm_world, int num_levels,
 						hierarchical_reduce, g, num_levels, alg_in, alg_out);
 				break;
 			case op_allreduce:
-				container = (MPIB_coll_container*) MPIB_HAllreduce_container_alloc(
-										hierarchical_allreduce, g, num_levels, alg_in, alg_out);
+				container =
+						(MPIB_coll_container*) MPIB_HAllreduce_container_alloc(
+								hierarchical_allreduce, g, num_levels, alg_in,
+								alg_out);
 				break;
 			case op_scatter:
 				container =
@@ -124,27 +126,22 @@ int get_himpi_group(int msg_size, int root, MPI_Comm comm_world, int num_levels,
  * from HBCAST_MIN_PROCS up to comm_size and save it into a config file.
  */
 void save_himpi_optimal_groups(int min_msg_size, int max_msg_size,
-		int msg_stride, int root, MPI_Comm comm_world, int num_levels,
-		int alg_in, int alg_out, himpi_operations op_id, int use_one_proc,
-		const char* file_name) {
+		int msg_stride, int root, int num_levels, int alg_in, int alg_out,
+		himpi_operations op_id, int use_one_proc, const char* file_name) {
 	int p;
-	int rank;
-	int comm_size;
 	int new_size;
-	MPI_Comm_rank(comm_world, &rank);
-	MPI_Comm_size(comm_world, &comm_size);
 
 	/*!
-	 * Find optimal number of groups for p\in[HMPI_MIN_PROCS+1, comm_size]
+	 * Find optimal number of groups for p\in[HMPI_MIN_PROCS+1, himpi_num_ranks_world]
 	 */
 	int p_start = HIMPI_MIN_PROCS;
 	if (use_one_proc) {
-		p_start = comm_size;
+		p_start = himpi_num_ranks_world;
 	}
 
 	char* config_file_name = create_file_name(file_name, op_id);
 	if (is_same_config(min_msg_size, max_msg_size, msg_stride,
-			comm_size, op_id, config_file_name))
+			himpi_num_ranks_world, op_id, config_file_name))
 		return;
 
 	FILE* fp;
@@ -154,18 +151,17 @@ void save_himpi_optimal_groups(int min_msg_size, int max_msg_size,
 	fprintf(fp,
 			"#num_procs\tnum_groups\tnum_levels\tmsg_size\talg_in\talg_out\top_id\n");
 	if (fp == NULL) {
-		fprintf(stdout, "Try to open the configuration file %s\n",
-				himpi_conf_file_name);
-		perror("fopen");
-		MPI_Abort(MPI_COMM_WORLD, 201);
+		himpi_abort(-1,
+				"save_himpi_optimal_groups: Can't open configuration file: %s @ %s:%d",
+				himpi_conf_file_name, __FILE__, __LINE__);
 	}
 
-
-	for (p = comm_size; p >= p_start; p/=2) {
+	for (p = himpi_num_ranks_world; p >= p_start; p /= 2) {
 		//TODO:  do we need all number of processes? May be we can use only pow of 2 number of processes.
 		MPI_Comm sub_comm;
-		MPI_Comm_split(comm_world, (rank<p) ? 0 : MPI_UNDEFINED,
-				rank, &sub_comm);
+		MPI_Comm_split(himpi_comm_world,
+				(himpi_my_rank_world < p) ? 0 : MPI_UNDEFINED,
+				himpi_my_rank_world, &sub_comm);
 		if (sub_comm != MPI_COMM_NULL) {
 			MPI_Comm_size(sub_comm, &new_size);
 
@@ -175,8 +171,8 @@ void save_himpi_optimal_groups(int min_msg_size, int max_msg_size,
 						alg_in, alg_out, op_id);
 
 				if (group != -1) {
-					fprintf(fp, "%d\t%d\t%d\t%d\t%d\t%d\t%d\n", new_size, group, 1,
-							msg, 0, 0, op_id);
+					fprintf(fp, "%d\t%d\t%d\t%d\t%d\t%d\t%d\n", new_size, group,
+							1, msg, 0, 0, op_id);
 					fflush(fp);
 				}
 			}
@@ -192,14 +188,11 @@ void save_himpi_optimal_groups(int min_msg_size, int max_msg_size,
  * TODO: not implemented yet
  */
 void save_hmpi_groups_in_memory(int min_msg_size, int max_msg_size,
-		int msg_stride, int root, MPI_Comm comm_world, int num_levels,
-		int alg_in, int alg_out, himpi_operations op_id, int use_one_proc) {
+		int msg_stride, int root, int num_levels, int alg_in, int alg_out,
+		himpi_operations op_id, int use_one_proc) {
 	int p;
-	int rank;
 	int comm_size;
 	int new_size;
-	MPI_Comm_rank(comm_world, &rank);
-	MPI_Comm_size(comm_world, &comm_size);
 
 	int p_end = comm_size - HIMPI_MIN_PROCS;
 	if (use_one_proc) {
@@ -212,14 +205,16 @@ void save_hmpi_groups_in_memory(int min_msg_size, int max_msg_size,
 	}
 
 	int data_size = p_end * mc;
-	group_data = (himpi_group_data*) malloc(data_size * sizeof(himpi_group_data));
+	group_data = (himpi_group_data*) malloc(
+			data_size * sizeof(himpi_group_data));
 
 	int i = 0;
 
 	for (p = 0; p < p_end; p++) {
 		MPI_Comm sub_comm;
-		MPI_Comm_split(comm_world, (comm_size - rank > p) ? 0 : MPI_UNDEFINED,
-				rank, &sub_comm);
+		MPI_Comm_split(himpi_comm_world,
+				(comm_size - himpi_my_rank_world > p) ? 0 : MPI_UNDEFINED,
+				himpi_my_rank_world, &sub_comm);
 		if (sub_comm != MPI_COMM_NULL) {
 			MPI_Comm_size(sub_comm, &new_size);
 
