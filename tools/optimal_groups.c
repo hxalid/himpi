@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-hmpi_group_data* group_data;
+himpi_group_data* group_data;
 
 /*!
  *  This function is used to find the requested
@@ -47,8 +47,8 @@ int get_specific_factor(int num_procs, int factor_idx) {
  * \param op_id hmpi collective operation id to use. IDs are defined in hmpi_operation in hmpi.h
  * \return optimal number of groups.
  */
-int get_hmpi_group(int msg_size, int root, MPI_Comm comm_world, int num_levels,
-		int alg_in, int alg_out, hmpi_operations op_id) {
+int get_himpi_group(int msg_size, int root, MPI_Comm comm_world, int num_levels,
+		int alg_in, int alg_out, himpi_operations op_id) {
 	MPIB_result result;
 	MPIB_precision precision;
 	MPIB_getopt_precision_default(&precision);
@@ -123,9 +123,9 @@ int get_hmpi_group(int msg_size, int root, MPI_Comm comm_world, int num_levels,
  * Calculate optimal number of groups for all number of processes
  * from HBCAST_MIN_PROCS up to comm_size and save it into a config file.
  */
-void save_hmpi_optimal_groups(int min_msg_size, int max_msg_size,
+void save_himpi_optimal_groups(int min_msg_size, int max_msg_size,
 		int msg_stride, int root, MPI_Comm comm_world, int num_levels,
-		int alg_in, int alg_out, hmpi_operations op_id, int use_one_proc,
+		int alg_in, int alg_out, himpi_operations op_id, int use_one_proc,
 		const char* file_name) {
 	int p;
 	int rank;
@@ -137,7 +137,7 @@ void save_hmpi_optimal_groups(int min_msg_size, int max_msg_size,
 	/*!
 	 * Find optimal number of groups for p\in[HMPI_MIN_PROCS+1, comm_size]
 	 */
-	int p_start = HMPI_MIN_PROCS;
+	int p_start = HIMPI_MIN_PROCS;
 	if (use_one_proc) {
 		p_start = comm_size;
 	}
@@ -155,7 +155,7 @@ void save_hmpi_optimal_groups(int min_msg_size, int max_msg_size,
 			"#num_procs\tnum_groups\tnum_levels\tmsg_size\talg_in\talg_out\top_id\n");
 	if (fp == NULL) {
 		fprintf(stdout, "Try to open the configuration file %s\n",
-				hmpi_conf_file_name);
+				himpi_conf_file_name);
 		perror("fopen");
 		MPI_Abort(MPI_COMM_WORLD, 201);
 	}
@@ -171,7 +171,7 @@ void save_hmpi_optimal_groups(int min_msg_size, int max_msg_size,
 
 			int msg = 0;
 			for (msg = min_msg_size; msg <= max_msg_size; msg *= msg_stride) {
-				int group = get_hmpi_group(msg, root, sub_comm, num_levels,
+				int group = get_himpi_group(msg, root, sub_comm, num_levels,
 						alg_in, alg_out, op_id);
 
 				if (group != -1) {
@@ -193,7 +193,7 @@ void save_hmpi_optimal_groups(int min_msg_size, int max_msg_size,
  */
 void save_hmpi_groups_in_memory(int min_msg_size, int max_msg_size,
 		int msg_stride, int root, MPI_Comm comm_world, int num_levels,
-		int alg_in, int alg_out, hmpi_operations op_id, int use_one_proc) {
+		int alg_in, int alg_out, himpi_operations op_id, int use_one_proc) {
 	int p;
 	int rank;
 	int comm_size;
@@ -201,7 +201,7 @@ void save_hmpi_groups_in_memory(int min_msg_size, int max_msg_size,
 	MPI_Comm_rank(comm_world, &rank);
 	MPI_Comm_size(comm_world, &comm_size);
 
-	int p_end = comm_size - HMPI_MIN_PROCS;
+	int p_end = comm_size - HIMPI_MIN_PROCS;
 	if (use_one_proc) {
 		p_end = 1;
 	}
@@ -212,7 +212,7 @@ void save_hmpi_groups_in_memory(int min_msg_size, int max_msg_size,
 	}
 
 	int data_size = p_end * mc;
-	group_data = (hmpi_group_data*) malloc(data_size * sizeof(hmpi_group_data));
+	group_data = (himpi_group_data*) malloc(data_size * sizeof(himpi_group_data));
 
 	int i = 0;
 
@@ -226,7 +226,7 @@ void save_hmpi_groups_in_memory(int min_msg_size, int max_msg_size,
 			int msg = 0;
 			for (msg = min_msg_size; msg <= max_msg_size; msg *= msg_stride) {
 
-				int group = get_hmpi_group(msg, root, sub_comm, num_levels,
+				int group = get_himpi_group(msg, root, sub_comm, num_levels,
 						alg_in, alg_out, op_id);
 				if (group != -1) {
 					group_data[i].num_procs = new_size;

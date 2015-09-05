@@ -1,12 +1,12 @@
 /*!
- * hmpi.h
+ * himpi.h
  *
  *  Created on: 25 Mar 2015
  *      Author: Khalid Hasanov
  */
 
-#ifndef HMPI_HMPI_H_
-#define HMPI_HMPI_H_
+#ifndef HIMPI_HMPI_H_
+#define HIMPI_HMPI_H_
 
 #include <mpi.h>
 #include <stdio.h>
@@ -18,22 +18,22 @@
 #define Bcast_TAG 904920477
 #define ERR_GROUPS -99
 
-#define HMPI_ALG_IN 0
-#define HMPI_ALG_OUT 0
-#define HMPI_NUM_GROUPS 1
-#define HMPI_NUM_LEVELS 1
-#define HMPI_ROOT_PROC 0
-#define HMPI_MIN_PROCS 4
-#define HMPI_MIN_MSG 1024	   // 1Kb
-#define HMPI_MAX_MSG 16777216  // 16Mb
-#define HMPI_MSG_STRIDE 2
-#define HMPI_CONF_FILE "./default_file.conf"
-#define HMPI_GENERATE_CONFIG 0
+#define HIMPI_ALG_IN 0
+#define HIMPI_ALG_OUT 0
+#define HIMPI_NUM_GROUPS 1
+#define HIMPI_NUM_LEVELS 1
+#define HIMPI_ROOT_PROC 0
+#define HIMPI_MIN_PROCS 4
+#define HIMPI_MIN_MSG 1024	   // 1Kb
+#define HIMPI_MAX_MSG 16777216  // 16Mb
+#define HIMPI_MSG_STRIDE 2
+#define HIMPI_CONF_FILE "./default_file.conf"
+#define HIMPI_GENERATE_CONFIG 0
 #define _unused(x) ((void)x)
 
-typedef enum hmpi_operations {
+typedef enum himpi_operations {
 	op_bcast, op_reduce, op_allreduce, op_scatter, op_gather, op_all
-} hmpi_operations;
+} himpi_operations;
 
 /*! hmpi configuration parameters */
 typedef struct hmpi_conf {
@@ -43,11 +43,11 @@ typedef struct hmpi_conf {
 	int message_size;
 	int alg_in;
 	int alg_out;
-	hmpi_operations op_id;
-} hmpi_conf;
+	himpi_operations op_id;
+} himpi_conf;
 
-/*! hmpi algorithm parameters */
-typedef struct hmpi_env {
+/*! himpi algorithm parameters */
+typedef struct himpi_env {
 	int min_msg;
 	int max_msg;
 	int msg_stride;
@@ -58,18 +58,18 @@ typedef struct hmpi_env {
 	int root;
 	char* conf_file_name;
 	int generate_config;
-} hmpi_env;
+} himpi_env;
 
 /*! It might be used in future to implement in-memory configuration */
-typedef struct hmpi_group_data {
+typedef struct himpi_group_data {
 	int num_procs;
 	int num_groups;
 	int msg_size;
-} hmpi_group_data;
+} himpi_group_data;
 
-extern const char *hmpi_conf_file_name;
-extern hmpi_env henv;
-extern hmpi_group_data* group_data;
+extern const char *himpi_conf_file_name;
+extern himpi_env henv;
+extern himpi_group_data* group_data;
 
 int validate_input(int num_groups, int num_procs);
 
@@ -93,23 +93,23 @@ int hierarchical_scatter(void *sendbuf, int sendcnt, MPI_Datatype sendtype,
 		void *recvbuf, int recvcnt, MPI_Datatype recvtype, int root,
 		MPI_Comm comm, int num_groups, int num_levels, int alg_in, int alg_out);
 
-int HMPI_Bcast(void *buffer, int count, MPI_Datatype datatype, int root,
+int HiMPI_Bcast(void *buffer, int count, MPI_Datatype datatype, int root,
 		MPI_Comm comm_world);
 
-int HMPI_Reduce(void *sendbuf, void* recvbuf, int count,
+int HiMPI_Reduce(void *sendbuf, void* recvbuf, int count,
 		MPI_Datatype datatype, MPI_Op op, int root, MPI_Comm comm);
 
-int HMPI_Allreduce(void *sendbuf, void* recvbuf, int count,
+int HiMPI_Allreduce(void *sendbuf, void* recvbuf, int count,
 		MPI_Datatype datatype, MPI_Op op, MPI_Comm comm);
 
-int HMPI_Scatter(void *sendbuf, int sendcnt, MPI_Datatype sendtype,
+int HiMPI_Scatter(void *sendbuf, int sendcnt, MPI_Datatype sendtype,
 		void *recvbuf, int recvcnt, MPI_Datatype recvtype, int root,
 		MPI_Comm comm);
 
-int HMPI_Gather(void *sendbuf, int sendcnt, MPI_Datatype sendtype,
+int HiMPI_Gather(void *sendbuf, int sendcnt, MPI_Datatype sendtype,
 		void *recvbuf, int recvcnt, MPI_Datatype recvtype, int root,
 		MPI_Comm comm);
 
-int HMPI_Init(int *argc, char ***argv);
+int HiMPI_Init(int *argc, char ***argv);
 
-#endif /* HMPI_HMPI_H_ */
+#endif /* HIMPI_HMPI_H_ */

@@ -8,7 +8,7 @@
 
 #include "tools/hpnla_debug.h"
 #include "tools/hpnla_timer.h"
-#include "hmpi/mpi_bcast_algs.h"
+#include "himpi/mpi_bcast_algs.h"
 #include "lu_factorization.h"
 #include <stdlib.h>
 #ifdef HDNLA_SMPI

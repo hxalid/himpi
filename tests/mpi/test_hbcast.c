@@ -19,7 +19,7 @@
 #include "config.h"
 
 //#include "hbcast_old.h"
-#include "hmpi/hmpi.h"
+#include "himpi/himpi.h"
 #include "tools/utils.h"
 #include "tools/optimal_groups.h"
 
@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
 	srand(time(NULL));
 
 	/*! Start up MPI */
-	HMPI_Init(&argc, &argv);
+	HiMPI_Init(&argc, &argv);
 
 	/*! Find out processor name */
 	MPI_Get_processor_name(p_name, &p_name_len);
@@ -183,7 +183,7 @@ int main(int argc, char* argv[]) {
 			for (i = 0; i < reps; i++) {
 				MPI_Barrier(MPI_COMM_WORLD);
 				start_time = MPI_Wtime();
-				HMPI_Bcast(array, msg_size, MPI_CHAR, root, MPI_COMM_WORLD);
+				HiMPI_Bcast(array, msg_size, MPI_CHAR, root, MPI_COMM_WORLD);
 				elapsed_time += (MPI_Wtime() - start_time);
 			}
 
@@ -208,7 +208,7 @@ int main(int argc, char* argv[]) {
 		MPI_Comm in_group_comm, out_group_comm;
 		double max_time_out, max_time_in;
 
-		if (num_proc > HMPI_MIN_PROCS) {
+		if (num_proc > HIMPI_MIN_PROCS) {
 			if (rank == root)
 				fprintf(stdout,
 						"SPLIT. root p g max_time_in max_time_out rec reps\n");
@@ -266,5 +266,5 @@ int main(int argc, char* argv[]) {
 	MPI_Barrier(MPI_COMM_WORLD);
 
 	/*! Shut down MPI */
-	HMPI_Finalize();
+	HiMPI_Finalize();
 } /* main */

@@ -1,5 +1,5 @@
 AC_PREREQ(2.59)
-AC_INIT([himpi], [1.0.0], [http://hcl.ucd.ie/project/hmpi])
+AC_INIT([himpi], [1.0.0], [http://hcl.ucd.ie/project/himpi])
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_AUX_DIR([build-aux])
@@ -13,7 +13,7 @@ AC_ARG_ENABLE([smpi], [AC_HELP_STRING([--enable-smpi], [Enable the compilation w
 if test "$smpi" = "yes"; then
   CC=smpicc
   CXX=smpicc
-  AC_DEFINE([HMPI_SMPI], [1], [Smpi enabled])
+  AC_DEFINE([HIMPI_SMPI], [1], [Smpi enabled])
 fi
 
 AC_PROG_LIBTOOL
@@ -26,7 +26,7 @@ AM_PATH_PYTHON([2.6])
 AC_MSG_CHECKING([whether debug is enabled])
 AC_ARG_ENABLE([debug], [AC_HELP_STRING([--enable-debug], [Enable debug (default: disabled)])], [debug="yes"], [debug="no"])
 if test "$debug" = "yes"; then
-	AC_DEFINE([HMPI_DEBUG], [1], [Debug enabled])
+	AC_DEFINE([HIMPI_DEBUG], [1], [Debug enabled])
 	CFLAGS="-g -O0 -Wall"
 	CXXFLAGS="-g -O0 -Wall -Wno-deprecated"
 fi
@@ -38,22 +38,22 @@ AC_ARG_WITH([group_conf], [AC_HELP_STRING([--with-group-conf=FILE], [Group confi
 if test "$with_group_conf" != ""; then
     if test -f "$with_group_conf"
 	then
-		AC_DEFINE_UNQUOTED([HMPI_GROUP_CONFIG], ["$with_group_conf"], [Group config enabled])
+		AC_DEFINE_UNQUOTED([HIMPI_GROUP_CONFIG], ["$with_group_conf"], [Group config enabled])
 	else
 		AC_MSG_ERROR([The specified group config file does not exist.])
 	fi
 fi
 
 
-AC_MSG_CHECKING([Which hmpi collectives should be optimized by default])
-AC_ARG_WITH([hmpi_opid], [AC_HELP_STRING([--with-hmpi-opid=<id>], [HMPI operation/collective id])])
-AC_DEFINE_UNQUOTED([HMPI_OPID], ["$with_hmpi_opid"], [Target HMPI operation selected])
+AC_MSG_CHECKING([The HIMPI collectives that should be optimized by default])
+AC_ARG_WITH([himpi_opid], [AC_HELP_STRING([--with-himpi-opid=<id>], [HiMPI operation/collective id])])
+AC_DEFINE_UNQUOTED([HIMPI_OPID], ["$with_himpi_opid"], [Target HiMPI operation selected])
 
 
 AC_MSG_CHECKING([Enable config generation])
 AC_ARG_ENABLE([config_generation], [AC_HELP_STRING([--enable-config-generation], [Enable config-generation (default: disabled)])], [config_generation="yes"], [config_generation="no"])
 if test "$config-generation" = "yes"; then
-	AC_DEFINE([HMPI_GENERATE_CONFIG], [1], [Config generation enabled])
+	AC_DEFINE([HIMPI_GENERATE_CONFIG], [1], [Config generation enabled])
 fi
 AC_MSG_RESULT([$config_generation])
 

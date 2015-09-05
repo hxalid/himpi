@@ -6,7 +6,7 @@
  */
 
 #include "tools/hpnla_debug.h"
-#include "hmpi/mpi_bcast_algs.h"
+#include "himpi/mpi_bcast_algs.h"
 #include "Matrix_init.h"
 #include "Summa.h"
 #include "tools/hpnla_timer.h"

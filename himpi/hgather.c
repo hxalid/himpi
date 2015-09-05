@@ -5,7 +5,7 @@
  *      Author: Khalid Hasanov
  */
 
-#include "hmpi.h"
+#include "himpi.h"
 #include "tools/utils.h"
 
 
@@ -69,15 +69,15 @@ int hierarchical_gather(void *sendbuf, int sendcnt, MPI_Datatype sendtype,
 	return res;
 }
 
-int HMPI_Gather(void *sendbuf, int sendcnt, MPI_Datatype sendtype,
+int HiMPI_Gather(void *sendbuf, int sendcnt, MPI_Datatype sendtype,
 		void *recvbuf, int recvcnt, MPI_Datatype recvtype, int root,
 		MPI_Comm comm) {
 	MPI_Aint extent, lb;
 	MPI_Type_get_extent(sendtype, &lb, &extent);
 	int msg_size = extent * sendcnt;
 
-	hmpi_conf my_conf = hmpi_get_my_conf(comm, msg_size, root,
-			hmpi_conf_file_name, op_gather);
+	himpi_conf my_conf = himpi_get_my_conf(comm, msg_size, root,
+			himpi_conf_file_name, op_gather);
 
 	return hierarchical_gather(sendbuf, sendcnt, sendtype, recvbuf, recvcnt,
 			recvtype, root, comm, my_conf.num_groups, my_conf.num_levels,

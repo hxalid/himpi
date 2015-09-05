@@ -5,8 +5,8 @@
  *      Author: Khalid Hasanov
  */
 
-#include "hmpi.h"
+#include "himpi.h"
 
-int HMPI_Finalize( void ) {
+int HiMPI_Finalize( void ) {
 	return MPI_Finalize();
 }

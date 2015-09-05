@@ -8,7 +8,7 @@
 #include <mpi.h>
 #include <stdlib.h>
 
-#include "hmpi.h"
+#include "himpi.h"
 #include "tools/utils.h"
 
 /*
@@ -38,7 +38,7 @@ int hierarchical_reduce(void *snd_buffer, void* rcv_buffer, int count,
 		return MPI_SUCCESS;
 	}
 
-	if (size > HMPI_MIN_PROCS && (num_groups > 1 && num_groups < size)) {
+	if (size > HIMPI_MIN_PROCS && (num_groups > 1 && num_groups < size)) {
 		pg = size / num_groups;
 		my_group = rank / pg;
 		//stride = root / pg;
@@ -92,7 +92,7 @@ int hierarchical_reduce(void *snd_buffer, void* rcv_buffer, int count,
 			MPI_Comm_free(&out_group_comm);
 		if (in_group_comm != MPI_COMM_NULL)
 			MPI_Comm_free(&in_group_comm);
-	} else if (size <= HMPI_MIN_PROCS
+	} else if (size <= HIMPI_MIN_PROCS
 			|| (num_groups == 1 || num_groups == size)) {
 		//fprintf(stdout, "Using non-hierarchical reduce\n");
 		err = MPI_Reduce(snd_buffer, rcv_buffer, count, datatype, op, root,
@@ -105,7 +105,7 @@ int hierarchical_reduce(void *snd_buffer, void* rcv_buffer, int count,
 	return err;
 }
 
-int HMPI_Reduce(void *snd_buffer, void* rcv_buffer, int count,
+int HiMPI_Reduce(void *snd_buffer, void* rcv_buffer, int count,
 		MPI_Datatype datatype, MPI_Op op, int root, MPI_Comm comm) {
 	MPI_Aint extent, lb;
 	MPI_Type_get_extent(datatype, &lb, &extent);
@@ -114,8 +114,8 @@ int HMPI_Reduce(void *snd_buffer, void* rcv_buffer, int count,
 	/*
 	 * TODO: Are you sure all processes have to open config file for read?
 	 */
-	hmpi_conf my_conf = hmpi_get_my_conf(comm, msg_size, root,
-			hmpi_conf_file_name, op_reduce);
+	himpi_conf my_conf = himpi_get_my_conf(comm, msg_size, root,
+			himpi_conf_file_name, op_reduce);
 
 	return hierarchical_reduce(snd_buffer, rcv_buffer, count, datatype, op,
 			root, comm, my_conf.num_groups, my_conf.num_levels, my_conf.alg_in,

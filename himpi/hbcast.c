@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "hmpi.h"
+#include "himpi.h"
 #include "tools/utils.h"
 #include "mpi_bcast_algs.h"
 
@@ -30,7 +30,7 @@ int hierarchical_broadcast(void *buffer, int count, MPI_Datatype datatype,
     
     if (comm_size == 1) return MPI_SUCCESS;
 
-    if (comm_size > HMPI_MIN_PROCS && validate_groups(num_groups, comm_size)) {
+    if (comm_size > HIMPI_MIN_PROCS && validate_groups(num_groups, comm_size)) {
         pg = comm_size / num_groups;
         my_group = rank / pg;
         stride = root / pg;
@@ -85,7 +85,7 @@ int hierarchical_broadcast(void *buffer, int count, MPI_Datatype datatype,
             MPI_Comm_free(&out_group_comm);
         if (in_group_comm != MPI_COMM_NULL)
             MPI_Comm_free(&in_group_comm);
-    } else if (comm_size <= HMPI_MIN_PROCS || validate_groups(num_groups, comm_size)) {
+    } else if (comm_size <= HIMPI_MIN_PROCS || validate_groups(num_groups, comm_size)) {
 
 #if(2 == DEBUG)
     	MPIX_Get_property(comm, MPIDO_RECT_COMM, &(bcast_response.rec_comm_world));
@@ -104,7 +104,7 @@ int hierarchical_broadcast(void *buffer, int count, MPI_Datatype datatype,
     return MPI_SUCCESS;
 }
 
-int HMPI_Bcast(void *buffer, int count, MPI_Datatype datatype,
+int HiMPI_Bcast(void *buffer, int count, MPI_Datatype datatype,
         int root, MPI_Comm comm) {
 	MPI_Aint extent, lb;
 	MPI_Type_get_extent(datatype, &lb, &extent);
@@ -113,7 +113,7 @@ int HMPI_Bcast(void *buffer, int count, MPI_Datatype datatype,
 	/*
 	 * TODO: Are you sure all processes have to open config file for read?
 	 */
-	hmpi_conf my_conf = hmpi_get_my_conf(comm, msg_size, root, hmpi_conf_file_name, op_bcast);
+	himpi_conf my_conf = himpi_get_my_conf(comm, msg_size, root, himpi_conf_file_name, op_bcast);
 
 	return hierarchical_broadcast(buffer, count, datatype, root, comm, my_conf.num_groups,
 			my_conf.num_levels, my_conf.alg_in, my_conf.alg_out);
