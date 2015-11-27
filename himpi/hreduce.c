@@ -25,8 +25,9 @@ int hierarchical_reduce(void *snd_buffer, void* rcv_buffer, int count,
 	int root_inside;
 	int root_outside;
 	int my_group;
-	double *reduce_out;
+	void *reduce_out;
 	MPI_Comm in_group_comm, out_group_comm;
+	MPI_Aint extent, lb;
 
 	MPI_Comm_rank(comm_world, &rank);
 	MPI_Comm_size(comm_world, &size);
@@ -54,7 +55,9 @@ int hierarchical_reduce(void *snd_buffer, void* rcv_buffer, int count,
 		 */
 		switch (num_levels) {
 		case 1: //! 1 level of hierarchy
-			reduce_out = (double*) malloc(count * sizeof(double));
+			MPI_Type_get_extent(datatype, &lb, &extent);
+
+			reduce_out = malloc(count * extent);
 
 			err = MPI_Reduce(snd_buffer, reduce_out, count, datatype, op,
 					root_inside, in_group_comm);

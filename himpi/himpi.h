@@ -11,6 +11,7 @@
 #include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 
 #include "config.h"
 
@@ -23,9 +24,9 @@
 #define HIMPI_NUM_GROUPS 1
 #define HIMPI_NUM_LEVELS 1
 #define HIMPI_ROOT_PROC 0
-#define HIMPI_MIN_PROCS 4
-#define HIMPI_MIN_MSG 1024	   // 1Kb
-#define HIMPI_MAX_MSG 16777216  // 16Mb
+#define HIMPI_MIN_PROCS 16
+#define HIMPI_MIN_MSG 1024	   // 1kB
+#define HIMPI_MAX_MSG 16777216  // 16MB
 #define HIMPI_MSG_STRIDE 2
 #define HIMPI_CONF_FILE "./default_file.conf"
 #define HIMPI_GENERATE_CONFIG 0
@@ -74,7 +75,7 @@ extern int himpi_debug;
 extern int himpi_my_rank_world;
 extern int himpi_num_ranks_world;
 /* According to POSIX standard hostname should not exceed 255 bytes*/
-extern char himpi_my_hostname[256];
+extern char himpi_my_hostname[_POSIX_HOST_NAME_MAX];
 extern MPI_Comm himpi_comm_world;
 
 int validate_input(int num_groups, int num_procs);

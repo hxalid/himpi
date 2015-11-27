@@ -5,6 +5,12 @@
 #include <stdarg.h>
 #include <errno.h>
 
+static int himpi_alltrue(int flag) {
+	int all_true = 0;
+	MPI_Allreduce(&flag, &all_true, 1, MPI_INT, MPI_LAND, himpi_comm_world);
+	return all_true;
+}
+
 /* print message to stderr */
 void himpi_err(const char *fmt, ...) {
 	va_list argp;
@@ -67,8 +73,8 @@ double hdnla_conf_int(double cl, int reps, double* T) {
 
 himpi_conf* himpi_get_conf_all(const char* filename, int* num_lines) {
 	if (filename == NULL) {
-		himpi_abort(-1, "himpi_get_conf_all: filename is null @ %s:%d",
-			__FILE__, __LINE__);
+		himpi_abort(-1, "%s: filename is null @ %s:%d", __func__, __FILE__,
+				__LINE__);
 	}
 
 	himpi_conf* confs = NULL;
@@ -91,14 +97,19 @@ himpi_conf* himpi_get_conf_all(const char* filename, int* num_lines) {
 			continue;
 
 		confs = realloc(confs, sizeof(himpi_conf) * (n + 1));
+		if (confs == NULL) {
+			himpi_abort(-1, "%s: Error reading line: %d \"%s\" err:%d @ %s:%d",
+								__func__, __FILE__, __LINE__);
+		}
+
 		int pos = 0;
 		int err = sscanf(line, "%d %d %d %d %d %d %d %n", &confs[n].num_procs,
 				&confs[n].num_groups, &confs[n].num_levels,
 				&confs[n].message_size, &confs[n].alg_in, &confs[n].alg_out,
 				&confs[n].op_id, &pos);
-		if (err < 6) {
+		if (err < 7) {
 			himpi_abort(-1, "%s: Error reading line: %d \"%s\" err:%d @ %s:%d",
-						__func__, __FILE__, __LINE__);
+					__func__, __FILE__, __LINE__);
 		}
 
 		n++;
@@ -107,6 +118,7 @@ himpi_conf* himpi_get_conf_all(const char* filename, int* num_lines) {
 	fclose(stream);
 	free(line);
 	*num_lines = n;
+
 	return confs;
 }
 
@@ -177,17 +189,28 @@ int is_same_config(int min_msg_size, int max_msg_size, int msg_stride,
 		searched_lines++;
 	}
 
+	/*
 	int num_procs = 0;
 	for (p = HIMPI_MIN_PROCS; p <= comm_size; p *= 2) {
 		num_procs++;
 	}
+	*/
 
+	int same_config = 1;
+	/*
 	if (num_lines != num_procs * searched_lines) {
-		fprintf(stdout,
-				"Should generate new config file. num_procs=%d, comm_size: %d, searched_lines: %d num_lines: %d\n",
-				num_procs, comm_size, searched_lines, num_lines);
-		return 0;
+		himpi_dbg(0,
+				"Generating new config file. num_procs=%d, comm_size: %d, "
+						"searched_lines: %d num_lines: %d, min_msg: %d, max_msg: %d, msg_stide: %d\n",
+				num_procs, comm_size, searched_lines, num_lines, min_msg_size,
+				max_msg_size, msg_stride);
+		same_config = 0;
 	}
+
+	if (!himpi_alltrue(same_config))
+		return 0;
+
+		*/
 
 	int matched_lines = 0;
 	if (confs != NULL) {
@@ -201,17 +224,27 @@ int is_same_config(int min_msg_size, int max_msg_size, int msg_stride,
 				i++;
 			}
 		}
+	} else {
+		fprintf("[%d] CONF IS NULL\n", himpi_my_rank_world);
 	}
 
+	same_config = 1;
 	if (num_lines != 0 && matched_lines == num_lines) {
-		fprintf(stdout, "The same config file [%s] exists...\n", filename);
-		return 1;
+		himpi_dbg(2, "The same config file [%s] exists...\n", filename);
 	} else {
-		fprintf(stdout,
-				"Should generate new config file. matched_lines: %d, num_lines: %d\n",
-				matched_lines, num_lines);
-		return 0;
+		himpi_dbg(0,
+				"Generating new config file. matched_lines: %d, num_lines: %d"
+						", min_msg: %d, max_msg: %d, msg_stide: %d\n",
+				matched_lines, num_lines, min_msg_size, max_msg_size,
+				msg_stride);
+		same_config = 0;
 	}
+
+	if (!himpi_alltrue(same_config))
+		return 0;
+
+	return 1;
+
 }
 
 himpi_conf himpi_get_my_conf(MPI_Comm comm, int msg_size, int root,
@@ -241,8 +274,9 @@ himpi_conf himpi_get_my_conf(MPI_Comm comm, int msg_size, int root,
 	}
 
 	if (!config_found && !my_rank) {
-		fprintf(stdout, "No config found. Using bcast. [p: %d, msg: %d]\n",
-				num_procs, msg_size);
+		himpi_dbg(0,
+				"%s: No config found. Using bcast. [p: %d, msg: %d] @ %s:%d\n",
+				__func__, num_procs, msg_size, __FILE__, __LINE__);
 	}
 
 	return my_conf;

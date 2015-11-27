@@ -64,8 +64,7 @@ int get_himpi_group(int msg_size, int root, MPI_Comm comm_world, int num_levels,
 
 	double* g_times = (double*) calloc(num_groups, sizeof(double));
 	if (g_times == NULL) {
-		fprintf(stderr,
-				"[get_hbcast_group]:Can't allocate memory for g_times\n");
+		himpi_err("[get_hbcast_group]:Can't allocate memory for g_times\n");
 		return -1; //TODO
 	}
 

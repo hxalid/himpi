@@ -15,7 +15,7 @@ himpi_env henv;
 int himpi_debug = 0;
 int himpi_my_rank_world = MPI_PROC_NULL;
 int himpi_num_ranks_world;
-char himpi_my_hostname[256] = "";
+char himpi_my_hostname[_POSIX_HOST_NAME_MAX] = "";
 MPI_Comm himpi_comm_world = MPI_COMM_NULL;
 
 void init_himpi_env(void) {
@@ -62,6 +62,8 @@ int HiMPI_Init(int *argc, char ***argv) {
 		return rc;
 	}
 
+	//TODO: if num_procs < HIMPI_MIN_PROCS then don't try read config
+
 	MPI_Comm_dup(MPI_COMM_WORLD, &himpi_comm_world);
 	if (himpi_comm_world == MPI_COMM_NULL) {
 		himpi_abort(-1,
@@ -69,13 +71,18 @@ int HiMPI_Init(int *argc, char ***argv) {
 				__FILE__, __LINE__);
 	}
 
+	MPI_Barrier(himpi_comm_world);
+
+	double start_time, end_time, elapsed_time = 0.;
+	start_time = MPI_Wtime();
+
 	MPI_Comm_size(himpi_comm_world, &himpi_num_ranks_world);
 	MPI_Comm_rank(himpi_comm_world, &himpi_my_rank_world);
 
 	/* get my hostname */
 	if (gethostname(himpi_my_hostname, sizeof(himpi_my_hostname)) != 0) {
-		himpi_abort(-1, "himpi_init: Failed to get hostname @ %s:%d",
-		__FILE__, __LINE__);
+		himpi_abort(-1, "%s: Failed to get hostname @ %s:%d",
+		__func__, __FILE__, __LINE__);
 	}
 
 #ifdef HIMPI_GROUP_CONFIG
@@ -106,7 +113,7 @@ int HiMPI_Init(int *argc, char ***argv) {
 	if (himpi_operation < op_bcast || himpi_operation > op_all) {
 		if (himpi_my_rank_world == 0)
 			himpi_dbg(0,
-					"Wrong HiMPI operation id: %d given via configuration or HiMPI_OPID environment. "
+					"Wrong HiMPI operation id: %d given via configuration or HIMPI_OPID environment. "
 							"Using %d instead\n"
 							"Allowed operation ids: [0: bcast, 1: reduce, 2: allreduce, "
 							"3: scatter, 4: gather, 5: all the previous collectives]\n",
@@ -130,6 +137,10 @@ int HiMPI_Init(int *argc, char ***argv) {
 			himpi_operation, himpi_my_rank_world, himpi_num_ranks_world,
 			himpi_my_hostname);
 
+	fprintf(stdout, "himpi_operation: %d, generate_config: %d, stride: %d, min_msg_size: %d, max_msg_size: %d\n",
+			himpi_operation, generate_config, henv.msg_stride, henv.min_msg, henv.max_msg);
+
+
 	if (generate_config) {
 		if (himpi_operation != op_all) {
 			save_himpi_optimal_groups(henv.min_msg, henv.max_msg,
@@ -147,6 +158,13 @@ int HiMPI_Init(int *argc, char ***argv) {
 
 		}
 
+	}
+
+	MPI_Barrier(himpi_comm_world);
+	elapsed_time += (MPI_Wtime() - start_time);
+
+	if (himpi_my_rank_world == 0) {
+		fprintf(stdout, "HiMPI_Init TIME: %lf sec.\n", elapsed_time);
 	}
 
 	return rc;

@@ -19,7 +19,7 @@ int hierarchical_allreduce(void *sendbuf, void* recvbuf, int count,
 	int root_inside;
 	int root_outside;
 	int my_group;
-	double *reduce_in;
+	void *reduce_in;
 
 	MPI_Comm in_group_comm, out_group_comm;
 
@@ -36,8 +36,11 @@ int hierarchical_allreduce(void *sendbuf, void* recvbuf, int count,
 		// MPI_Comm_split(comm_world, (rank - my_group * pg == 0) ? 0 : MPI_UNDEFINED, rank, &out_group_comm);
 		MPI_Comm_split(comm_world, rank - my_group * pg, rank, &out_group_comm);
 
-		if (num_levels == 1)
-			reduce_in = (double*) malloc(count * sizeof(double));
+		if (num_levels == 1) {
+			MPI_Aint extent, lb;
+			MPI_Type_get_extent(datatype, &lb, &extent);
+			reduce_in = malloc(count * extent);
+		}
 
 		/*!
 		 * Start broadcasting inside groups
