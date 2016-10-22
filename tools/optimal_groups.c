@@ -9,10 +9,14 @@
 #include "utils.h"
 #include "MPIBlib/benchmarks/mpib.h"
 
+#include <unistd.h>
 #include <stdlib.h>
 #include <math.h>
 
 himpi_group_data* group_data;
+
+//TODO:  define new config option to set if we have parallel file system
+//#define HIMPI_HAS_PFS 1
 
 /*!
  *  This function is used to find the requested
@@ -129,6 +133,7 @@ void save_himpi_optimal_groups(int min_msg_size, int max_msg_size,
 		himpi_operations op_id, int use_one_proc, const char* file_name) {
 	int p;
 	int new_size;
+	int file_exists = 0;
 
 	/*!
 	 * Find optimal number of groups for p\in[HMPI_MIN_PROCS+1, himpi_num_ranks_world]
@@ -144,16 +149,31 @@ void save_himpi_optimal_groups(int min_msg_size, int max_msg_size,
 		return;
 
 	FILE* fp;
-	fp = fopen(config_file_name, "w"); //TODO:  should I overwrite?
-	free(config_file_name);
+	if( access( config_file_name, F_OK ) != -1 ) {
+	   fp = fopen(config_file_name, "a"); //File exists
+	   file_exists = 1;
+	} else
+	   fp = fopen(config_file_name, "w");  // File does not exist
 
-	fprintf(fp,
-			"#num_procs\tnum_groups\tnum_levels\tmsg_size\talg_in\talg_out\top_id\n");
+	//free(config_file_name);
+
 	if (fp == NULL) {
 		himpi_abort(-1,
 				"save_himpi_optimal_groups: Can't open configuration file: %s @ %s:%d",
 				himpi_conf_file_name, __FILE__, __LINE__);
 	}
+
+	/*
+	 *  If we have a parallel file system then only one rank writes to file,
+	 *  otherwise all create there own files.
+	 */
+	if ( !file_exists )
+	#ifdef HIMPI_HAS_PFS
+	    if ( !himpi_my_rank_world )
+	       fprintf(fp, "#num_procs\tnum_groups\tnum_levels\tmsg_size\talg_in\talg_out\top_id\n");
+    #else
+	    fprintf(fp, "#num_procs\tnum_groups\tnum_levels\tmsg_size\talg_in\talg_out\top_id\n");
+    #endif
 
 	for (p = himpi_num_ranks_world; p >= p_start; p /= 2) {
 		//TODO:  do we need all number of processes? May be we can use only pow of 2 number of processes.
@@ -170,8 +190,15 @@ void save_himpi_optimal_groups(int min_msg_size, int max_msg_size,
 						alg_in, alg_out, op_id);
 
 				if (group != -1) {
-					fprintf(fp, "%d\t%d\t%d\t%d\t%d\t%d\t%d\n", new_size, group,
-							1, msg, 0, 0, op_id);
+					#if HIMPI_HAS_PFS
+						if ( !himpi_my_rank_world ) {
+							fprintf(fp, "%d\t%d\t%d\t%d\t%d\t%d\t%d\n", new_size, group, 1, msg, 0, 0, op_id);
+							printf(" %d\t%d\t%d\t%d\t%d\t%d\t%d\n", new_size, group, 1, msg, 0, 0, op_id);
+						}
+					#else
+					    fprintf(fp, "%d\t%d\t%d\t%d\t%d\t%d\t%d\n", new_size, group, 1, msg, 0, 0, op_id);
+					#endif
+
 					fflush(fp);
 				}
 			}
@@ -180,6 +207,9 @@ void save_himpi_optimal_groups(int min_msg_size, int max_msg_size,
 		}
 	}
 
+	/*
+	 *  TODO:  think twice if we need barrier before closing file
+	 */
 	fclose(fp);
 }
 

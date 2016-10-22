@@ -137,7 +137,7 @@ int HiMPI_Init(int *argc, char ***argv) {
 			himpi_operation, himpi_my_rank_world, himpi_num_ranks_world,
 			himpi_my_hostname);
 
-	fprintf(stdout, "himpi_operation: %d, generate_config: %d, stride: %d, min_msg_size: %d, max_msg_size: %d\n",
+	himpi_dbg(1, "himpi_operation: %d, generate_config: %d, stride: %d, min_msg_size: %d, max_msg_size: %d\n",
 			himpi_operation, generate_config, henv.msg_stride, henv.min_msg, henv.max_msg);
 
 

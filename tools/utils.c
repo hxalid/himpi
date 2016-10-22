@@ -225,14 +225,14 @@ int is_same_config(int min_msg_size, int max_msg_size, int msg_stride,
 			}
 		}
 	} else {
-		fprintf("[%d] CONF IS NULL\n", himpi_my_rank_world);
+		himpi_dbg(2, "[%d] CONF IS NULL\n", himpi_my_rank_world);
 	}
 
 	same_config = 1;
 	if (num_lines != 0 && matched_lines == num_lines) {
 		himpi_dbg(2, "The same config file [%s] exists...\n", filename);
 	} else {
-		himpi_dbg(0,
+		himpi_dbg(2,
 				"Generating new config file. matched_lines: %d, num_lines: %d"
 						", min_msg: %d, max_msg: %d, msg_stide: %d\n",
 				matched_lines, num_lines, min_msg_size, max_msg_size,
