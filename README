@@ -6,6 +6,8 @@ Required software:
 2. GSL (GNU Scientific Library)
 3. Any BLAS library for examples (e.g. ATLAS, gsl cblas, gotoblas etc.). It will be made as optional in future.
 4. Boost (The Boost C++ libraries: Graph)
+5. Git
+6. GNU Autotools
 
 Optional software:
 1. Gnuplot (An Interactive Plotting Program) - for performance diagrams
@@ -33,6 +35,7 @@ For users
 Clone latest source code git@git.ucd.ie:khalid.hasanov/himpi.git
 
 $ cd himpi
+$ autoreconf -fi
 $ ./configure
 $ make 
 $ make install
@@ -46,18 +49,4 @@ Packages:
 
 Check configure options:
 $ ./configure -h
-
-For developers
---------------
-
-Required software:
-1. Git
-2. GNU autotools
-3. Doxygen, Graphviz and any TeX - optional (for reference manual)
-
-$ git clone git@git.ucd.ie:khalid.hasanov/himpi.git
-$ cd himpi
-$ autoreconf -i
-$ ./configure --enable-debug
-$ make 
 
