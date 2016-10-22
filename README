@@ -1,3 +1,63 @@
-The Hierarchical MPI (HiMPI) addresses the problem of reduction of the communication cost of traditional message-passing data-parallel applications on large-scale distributed-memory computing systems. The approach it employs is a traditional methodology widely used for dealing with the complexity of coordination and management of a large number of actors, namely, the hierarchical approach. According to this technique, thousands or millions of actors are structured, and instead of interacting with a large number of peers, they coordinate their activities with one superior and a small number of peers and inferiors. This way the overhead of interaction is significantly reduced.
+Installation
+============
 
-The hierarchy is achieved by organizing the MPI processes into logical groups. The HiMPI library is layered on top of the existing MPI implementations, provides automatic estimation and selections of the optimal parameters in the hierarchical algorithms and is portable to any parallel platforms that supports MPI. Currently, HiMPI supports MPI broadcast, reduce, allreduce, scatter and gather operations.
+Required software:
+1. Any C/C++ compiler and MPI 
+2. GSL (GNU Scientific Library)
+3. Any BLAS library for examples (e.g. ATLAS, gsl cblas, gotoblas etc.). It will be made as optional in future.
+4. Boost (The Boost C++ libraries: Graph)
+
+Optional software:
+1. Gnuplot (An Interactive Plotting Program) - for performance diagrams
+2. Graphviz (Graph Visualization Software: dot) - for tree visualization
+
+GSL
+If GSL is installed in a non-default directory
+$ export LD_LIBRARY_PATH=DIR/lib:$LD_LIBRARY_PATH
+
+Boost
+1. Boost should be configured with at least the Graph library
+   (default: all)
+$ ./configure --prefix=DIR --with-libraries=graph
+2. Default installation:
+ - DIR/include/boost_version/boost
+ - DIR/lib/libboost_library_versions.*
+Create symbolic links:
+$ cd DIR/include; ln -s boost_version/boost
+$ cd DIR/lib; ln -s libboost_[library]_[version].[a/so] libboost_[library].[a/so]
+$ export LD_LIBRARY_PATH=DIR/lib:$LD_LIBRARY_PATH
+
+For users
+---------
+
+Clone latest source code git@git.ucd.ie:khalid.hasanov/himpi.git
+
+$ cd himpi
+$ ./configure
+$ make 
+$ make install
+
+Configuration
+-------------
+
+Packages:
+  --with-gsl-dir=DIR      GNU Scientific Library directory
+  --with-boost-dir=DIR    The Boost C++ libraries directory
+
+Check configure options:
+$ ./configure -h
+
+For developers
+--------------
+
+Required software:
+1. Git
+2. GNU autotools
+3. Doxygen, Graphviz and any TeX - optional (for reference manual)
+
+$ git clone git@git.ucd.ie:khalid.hasanov/himpi.git
+$ cd himpi
+$ autoreconf -i
+$ ./configure --enable-debug
+$ make 
+
