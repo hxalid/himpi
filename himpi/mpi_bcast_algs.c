@@ -464,6 +464,7 @@ int bcast_binomial_tree(void * buff, int count, MPI_Datatype data_type,
     return success;
 }
 
+
 void hpnla_bcast(void *buffer, int count, MPI_Datatype datatype,
         int root, MPI_Comm comm, bcast_algo algorithm) {
     int myrank;

@@ -69,7 +69,10 @@ int main(int argc, char* argv[]) {
 	int g_max = num_proc;
 
 	int opt;
+
 	while ((opt = getopt(argc, argv, "m:M:r:s:i:a:g:f:d:uh")) != -1) {
+
+
 		switch (opt) {
 		case 'm':
 			message_min = atoi(optarg);
@@ -128,9 +131,9 @@ int main(int argc, char* argv[]) {
 	}
 
 	if (debug > 0) {
+		MPI_Barrier(MPI_COMM_WORLD);
 		fprintf(stdout, "%d: %s\n", rank, p_name);
-		MPI_Barrier(MPI_COMM_WORLD);
-		MPI_Barrier(MPI_COMM_WORLD);
+		/*MPI_Barrier(MPI_COMM_WORLD);*/
 	}
 
 	if (rank == root) {
@@ -147,6 +150,7 @@ int main(int argc, char* argv[]) {
 	MPIX_Get_property(comm_world, MPIDO_RECT_COMM, &rec_world);
 #endif
 
+	int count_m = 0;
 	for (msg_size = message_min; msg_size < message_max + 1; msg_size *=
 			msg_factor) {
 		array = create_rand_elms(msg_size);
@@ -154,8 +158,10 @@ int main(int argc, char* argv[]) {
 		elapsed_time = 0.;
 		for (i = 0; i < reps; i++) {
 			MPI_Barrier(MPI_COMM_WORLD);
+
 			start_time = MPI_Wtime();
-			hpnla_bcast(array, msg_size, MPI_CHAR, root, MPI_COMM_WORLD, alg);
+			//hpnla_bcast(array, msg_size, MPI_CHAR, root, MPI_COMM_WORLD, alg);
+			MPI_Bcast(array, msg_size, MPI_CHAR, root, MPI_COMM_WORLD);
 			elapsed_time += (MPI_Wtime() - start_time);
 		}
 		elapsed_time /= reps; // time in sec
@@ -173,6 +179,7 @@ int main(int argc, char* argv[]) {
 		free(array);
 	}
 
+
 	if (rec != 0) {
 		for (msg_size = message_min; msg_size < message_max + 1; msg_size *=
 				msg_factor) {
@@ -183,6 +190,7 @@ int main(int argc, char* argv[]) {
 			for (i = 0; i < reps; i++) {
 				MPI_Barrier(MPI_COMM_WORLD);
 				start_time = MPI_Wtime();
+
 				HiMPI_Bcast(array, msg_size, MPI_CHAR, root, MPI_COMM_WORLD);
 				elapsed_time += (MPI_Wtime() - start_time);
 			}

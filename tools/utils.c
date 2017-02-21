@@ -4,6 +4,7 @@
 /* variable length args */
 #include <stdarg.h>
 #include <errno.h>
+#include <unistd.h>
 
 static int himpi_alltrue(int flag) {
 	int all_true = 0;
@@ -79,7 +80,17 @@ himpi_conf* himpi_get_conf_all(const char* filename, int* num_lines) {
 
 	himpi_conf* confs = NULL;
 	FILE* stream;
-	stream = fopen(filename, "r");
+
+	if( access( filename, F_OK ) == -1 ) {
+		// file doesn't exist
+		stream = fopen(filename ,"w+");
+	}else
+	{
+		//file exist
+		stream = fopen(filename, "r");
+	}
+
+	//stream = fopen(filename, "r");
 	if (stream == NULL) {
 		himpi_err("Can't open the configuration file %s\n", filename);
 		*num_lines = 0;
@@ -266,9 +277,11 @@ himpi_conf himpi_get_my_conf(MPI_Comm comm, int msg_size, int root,
 		save_himpi_optimal_groups(msg_size, msg_size, henv.msg_stride, root,
 				henv.num_levels, henv.bcast_alg_in, henv.bcast_alg_out, op_id,
 				1, filename); //TODO: 1
+
 		MPI_Barrier(comm);
 
 		confs = himpi_get_conf_all(conf_file_name, &num_lines);
+
 		my_conf = find_config(confs, num_procs, msg_size, op_id, num_lines,
 				&config_found);
 	}
@@ -310,3 +323,67 @@ char* create_file_name(char* file_name, int op_id) {
 	return conf_file_name;
 }
 
+int get_bcat_alg_id(int message_size, int communicator_size, int count )
+{
+
+	/* Decision function based on MX results for
+       messages up to 36MB and communicator sizes up to 64 nodes */
+    const size_t small_message_size = 2048;
+    const size_t intermediate_message_size = 370728;
+    const double a_p16  = 3.2118e-6; /* [1 / byte] */
+    const double b_p16  = 8.7936;
+    const double a_p64  = 2.3679e-6; /* [1 / byte] */
+    const double b_p64  = 1.1787;
+    const double a_p128 = 1.6134e-6; /* [1 / byte] */
+    const double b_p128 = 2.1102;
+
+
+    /* Handle messages of small and intermediate size, and
+       single-element broadcasts */
+    if ((message_size < small_message_size) || (count <= 1)) {
+        /* Binomial without segmentation */
+        return BINOMIAL;
+    } else if (message_size < intermediate_message_size) {
+        /* SplittedBinary with 1KB segments */
+        return SPLIT_BINARY_TREE;
+    }
+    /* Handle large message sizes */
+    else if (communicator_size < (a_p128 * message_size + b_p128)) {
+        /* Pipeline with 128KB segments */
+        return PIPELINE;
+    } else if (communicator_size < 13) {
+        /* Split Binary with 8KB segments */
+    	return BINARY_TREE;
+    } else if (communicator_size < (a_p64 * message_size + b_p64)) {
+        /* Pipeline with 64KB segments */
+    	return PIPELINE;
+    } else if (communicator_size < (a_p16 * message_size + b_p16)) {
+        /* Pipeline with 16KB segments */
+        return PIPELINE;
+    }
+
+    return PIPELINE;
+}
+
+int set_bcast_alg_t(int alg_id)
+{
+    int cidx, nvals, err;
+    int val;
+
+    MPI_T_cvar_handle chandle;
+
+    err = MPI_T_cvar_get_index("coll_tuned_bcast_algorithm", &cidx);
+
+    if (err != MPI_SUCCESS) {
+       fprintf(stdout, "Error getting cvar index\n");
+    }
+
+    err = MPI_T_cvar_handle_alloc(cidx, NULL, &chandle, &nvals);
+
+    err = MPI_T_cvar_write(chandle, &alg_id);
+
+    MPI_T_cvar_handle_free(&chandle);
+
+    return EXIT_SUCCESS;
+
+}

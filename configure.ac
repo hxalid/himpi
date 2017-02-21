@@ -52,9 +52,11 @@ AC_DEFINE_UNQUOTED([HIMPI_OPID], ["$with_himpi_opid"], [Target HiMPI operation s
 
 AC_MSG_CHECKING([Enable config generation])
 AC_ARG_ENABLE([config_generation], [AC_HELP_STRING([--enable-config-generation], [Enable config-generation (default: disabled)])], [config_generation="yes"], [config_generation="no"])
-if test "$config-generation" = "yes"; then
+
+if test "$config_generation" = "yes"; then
 	AC_DEFINE([HIMPI_GENERATE_CONFIG], [1], [Config generation enabled])
 fi
+
 AC_MSG_RESULT([$config_generation])
 
 

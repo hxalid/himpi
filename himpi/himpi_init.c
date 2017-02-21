@@ -54,9 +54,14 @@ void init_himpi_env(void) {
 }
 
 int HiMPI_Init(int *argc, char ***argv) {
+	int provided;
+
 	init_himpi_env();
 
 	int rc = MPI_Init(argc, argv);
+
+	/* Initiolasition MPI tool information interface */
+	MPI_T_init_thread(MPI_THREAD_SINGLE, &provided);
 
 	if (rc != MPI_SUCCESS) {
 		return rc;
@@ -123,12 +128,13 @@ int HiMPI_Init(int *argc, char ***argv) {
 	}
 
 	int generate_config = 0;
-#ifdef HMPI_GENERATE_CONFIG
+#ifdef HIMPI_GENERATE_CONFIG
 	generate_config = 1;
 #endif
 
 	if (getenv("HIMPI_GENERATE_CONFIG") != NULL) {
 		generate_config = henv.generate_config;
+
 	}
 
 	himpi_dbg(1,
@@ -140,8 +146,8 @@ int HiMPI_Init(int *argc, char ***argv) {
 	himpi_dbg(1, "himpi_operation: %d, generate_config: %d, stride: %d, min_msg_size: %d, max_msg_size: %d\n",
 			himpi_operation, generate_config, henv.msg_stride, henv.min_msg, henv.max_msg);
 
-
 	if (generate_config) {
+
 		if (himpi_operation != op_all) {
 			save_himpi_optimal_groups(henv.min_msg, henv.max_msg,
 					henv.msg_stride, henv.root, henv.num_levels,

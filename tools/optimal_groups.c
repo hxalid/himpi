@@ -144,6 +144,7 @@ void save_himpi_optimal_groups(int min_msg_size, int max_msg_size,
 	}
 
 	char* config_file_name = create_file_name(file_name, op_id);
+
 	if (is_same_config(min_msg_size, max_msg_size, msg_stride,
 			himpi_num_ranks_world, op_id, config_file_name))
 		return;
